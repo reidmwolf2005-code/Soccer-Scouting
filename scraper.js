@@ -1,4 +1,4 @@
-// MIAC Soccer SIDEARM roster + stats scraper
+/ MIAC Soccer SIDEARM roster + stats scraper
 // Run: /usr/local/bin/node scraper.js GUS
 // Run all: /usr/local/bin/node scraper.js
 
@@ -6,8 +6,9 @@ const cheerio = require('cheerio');
 const fetch = (...args) => import('node-fetch').then(m => m.default(...args));
 const { createClient } = require('@supabase/supabase-js');
 
-const SUPABASE_URL = 'https://bqhjdxmetwrcyrftefiq.supabase.co';
-const SERVICE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJxaGpkeG1ldHdyY3lyZnRlZmlxIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4MjA4Mjk4OSwiZXhwIjoyMDk3NjU4OTg5fQ.tYqP_zG8YwDCwxeukWscoz0ey6FclxpOyL60CTW2C5k'; // ← paste here
+const SUPABASE_URL = process.env.SUPABASE_URL || 'https://bqhjdxmetwrcyrftefiq.supabase.co';
+const SERVICE_KEY  = process.env.SUPABASE_SERVICE_KEY;
+if (!SERVICE_KEY) { console.error('Missing SUPABASE_SERVICE_KEY env var'); process.exit(1); }
 const supabase = createClient(SUPABASE_URL, SERVICE_KEY);
 
 const SCHOOLS = [
