@@ -1,4 +1,4 @@
-/ MIAC Soccer SIDEARM roster + stats scraper
+// MIAC Soccer SIDEARM roster + stats scraper
 // Run: /usr/local/bin/node scraper.js GUS
 // Run all: /usr/local/bin/node scraper.js
 
