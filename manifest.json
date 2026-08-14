@@ -1,0 +1,24 @@
+{
+  "name": "MIAC Soccer Scouting",
+  "short_name": "Scouting Hub",
+  "description": "Gustavus Adolphus Men's Soccer scouting hub",
+  "start_url": "./MIAC Scouting Hub.dc.html",
+  "display": "standalone",
+  "background_color": "#0a0a0a",
+  "theme_color": "#c6a04a",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "assets/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "assets/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#c6a04a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="apple-touch-icon" href="./assets/miac-logo.png">
+<script>if('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');</script>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#0a0a0a;font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased}
+  ::-webkit-scrollbar{width:9px;height:9px}::-webkit-scrollbar-thumb{background:rgba(255,255,255,.16);border-radius:8px}
+  input,select{font-family:'Inter',sans-serif}
+  input:focus,select:focus{border-color:rgba(198,160,74,.6)!important}
+  select option{background:#161616;color:#fff}
+  @media(max-width:768px){
+    .admin-topbar{padding:10px 16px!important}
+    .admin-content{padding:16px 14px 56px!important}
+    .admin-cols{grid-template-columns:1fr!important}
+  }
+</style>
+</helmet>
+
+<div style="min-height:100vh;background:#0a0a0a;display:flex;flex-direction:column;align-items:center;font-family:'Inter',sans-serif">
+
+  <div style="width:100%;background:linear-gradient(180deg,#161616,#0d0d0d);border-bottom:1px solid rgba(198,160,74,.3);position:sticky;top:0;z-index:30">
+    <div class="admin-topbar" style="max-width:1000px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:13px 40px">
+      <a href="MIAC Scouting Hub.dc.html" style="display:flex;align-items:center;gap:14px;text-decoration:none">
+        <span style="color:#cfcfcf;font-size:13px;font-weight:700">← Hub</span>
+        <div style="width:1px;height:26px;background:rgba(255,255,255,.14)"></div>
+        <img src="assets/miac-logo.png" alt="MIAC" style="height:34px;width:auto;display:block">
+      </a>
+      <span style="font-family:'Archivo',sans-serif;font-weight:900;font-size:15px;color:#fff;letter-spacing:.02em">ACCESS MANAGEMENT</span>
+    </div>
+  </div>
+
+  <div class="admin-content" style="width:100%;max-width:1000px;padding:30px 40px 64px">
+
+    <!-- signed-in / switcher -->
+    <div style="background:#141414;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:20px 24px;margin-bottom:18px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+        <span style="font-family:'Archivo',sans-serif;font-weight:800;font-size:14px;color:#fff;letter-spacing:.02em">SIGNED IN AS</span>
+        <span style="font-size:11.5px;color:#7a7a7c;font-weight:600">Demo sign-in · click a person to act as them</span>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:10px">
+        <sc-for list="{{ switcher }}" as="u" hint-placeholder-count="5">
+          <button onClick="{{ u.onSwitch }}" style="{{ u.chipStyle }}">
+            <span style="{{ u.avatarStyle }}">{{ u.initials }}</span>
+            <span style="display:flex;flex-direction:column;align-items:flex-start;line-height:1.2">
+              <span style="font-size:13px;font-weight:700;color:#fff">{{ u.name }}</span>
+              <span style="font-size:10.5px;font-weight:700;color:{{ u.roleFg }}">{{ u.roleLabel }}</span>
+            </span>
+          </button>
+        </sc-for>
+      </div>
+    </div>
+
+    <!-- ADMIN-ONLY management -->
+    <sc-if value="{{ isAdmin }}" hint-placeholder-val="{{ true }}">
+      <div style="display:flex;gap:12px;margin-bottom:18px">
+        <div style="flex:1;background:#141414;border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:16px 18px;display:flex;flex-direction:column;gap:3px">
+          <span style="font-family:'Archivo',sans-serif;font-weight:900;font-size:24px;color:#e4c977">{{ adminCount }}</span>
+          <span style="font-size:11px;letter-spacing:.08em;color:#8a8a8c;font-weight:700;text-transform:uppercase">Admins</span>
+        </div>
+        <div style="flex:1;background:#141414;border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:16px 18px;display:flex;flex-direction:column;gap:3px">
+          <span style="font-family:'Archivo',sans-serif;font-weight:900;font-size:24px;color:#5fbf7a">{{ coachCount }}</span>
+          <span style="font-size:11px;letter-spacing:.08em;color:#8a8a8c;font-weight:700;text-transform:uppercase">Coaches · can edit</span>
+        </div>
+        <div style="flex:1;background:#141414;border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:16px 18px;display:flex;flex-direction:column;gap:3px">
+          <span style="font-family:'Archivo',sans-serif;font-weight:900;font-size:24px;color:#fff">{{ playerCount }}</span>
+          <span style="font-size:11px;letter-spacing:.08em;color:#8a8a8c;font-weight:700;text-transform:uppercase">Players · view only</span>
+        </div>
+      </div>
+
+      <div style="background:#141414;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:22px 24px;margin-bottom:18px">
+        <span style="font-family:'Archivo',sans-serif;font-weight:800;font-size:15px;color:#fff;letter-spacing:.02em;display:block;margin-bottom:16px">PEOPLE · {{ userCount }}</span>
+        <div style="display:grid;grid-template-columns:40px 1fr 150px 36px;gap:12px;padding:0 4px 10px;font-size:10px;letter-spacing:.08em;color:#6e6e70;font-weight:800;border-bottom:1px solid rgba(255,255,255,.08)">
+          <span></span><span>NAME &amp; EMAIL</span><span>ROLE</span><span></span>
+        </div>
+        <sc-for list="{{ people }}" as="u" hint-placeholder-count="5">
+          <div style="display:grid;grid-template-columns:40px 1fr 150px 36px;gap:12px;align-items:center;padding:11px 4px;border-bottom:1px solid rgba(255,255,255,.05)">
+            <span style="{{ u.avatarStyle }}">{{ u.initials }}</span>
+            <span style="display:flex;flex-direction:column;line-height:1.25;min-width:0">
+              <span style="font-size:14px;font-weight:700;color:#fff">{{ u.name }}{{ u.youTag }}</span>
+              <span style="font-size:12px;color:#8a8a8c;font-weight:500">{{ u.email }}</span>
+            </span>
+            <select value="{{ u.role }}" data-id="{{ u.id }}" onChange="{{ onRole }}" style="width:100%;background:#0d0d0d;border:1px solid rgba(255,255,255,.14);border-radius:8px;padding:9px 10px;color:#fff;font-size:13px;font-weight:600;outline:none">
+              <option value="player">Player · view only</option>
+              <option value="coach">Coach · can edit</option>
+              <option value="admin">Admin · full access</option>
+            </select>
+            <button data-id="{{ u.id }}" onClick="{{ onRemove }}" title="Remove" style="background:transparent;border:none;color:#8f2222;font-size:18px;font-weight:800;cursor:pointer;line-height:1">×</button>
+          </div>
+        </sc-for>
+
+        <div style="margin-top:20px;padding-top:18px;border-top:1px solid rgba(255,255,255,.08)">
+          <span style="font-weight:700;font-size:13px;color:#fff;display:block;margin-bottom:12px">Add a person</span>
+          <div style="display:grid;grid-template-columns:1fr 1fr 150px auto;gap:10px;align-items:center">
+            <input value="{{ newName }}" onChange="{{ onNewName }}" placeholder="Full name" style="background:#0d0d0d;border:1px solid rgba(255,255,255,.14);border-radius:8px;padding:10px 12px;color:#fff;font-size:13px;outline:none">
+            <input value="{{ newEmail }}" onChange="{{ onNewEmail }}" placeholder="email@gustavus.edu" style="background:#0d0d0d;border:1px solid rgba(255,255,255,.14);border-radius:8px;padding:10px 12px;color:#fff;font-size:13px;outline:none">
+            <select value="{{ newRole }}" onChange="{{ onNewRole }}" style="background:#0d0d0d;border:1px solid rgba(255,255,255,.14);border-radius:8px;padding:10px;color:#fff;font-size:13px;font-weight:600;outline:none">
+              <option value="player">Player</option><option value="coach">Coach</option><option value="admin">Admin</option>
+            </select>
+            <button onClick="{{ addPerson }}" style="background:linear-gradient(135deg,#c6a04a,#e4c977);color:#161616;border:none;border-radius:8px;padding:10px 18px;font-family:'Archivo',sans-serif;font-weight:800;font-size:13px;cursor:pointer;white-space:nowrap">+ Add</button>
+          </div>
+          <span style="font-size:12px;font-weight:700;color:{{ flashColor }};display:block;margin-top:10px">{{ flash }}</span>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:14px;background:#101010;border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:18px 22px">
+        <div style="display:flex;flex-direction:column;gap:7px;font-size:12.5px;color:#9a9a9c;line-height:1.5;font-weight:500">
+          <span><b style="color:#e4c977">Admin</b> — manage this access list and edit all scouting data.</span>
+          <span><b style="color:#5fbf7a">Coach</b> — open “Manage Data” on any team to edit rosters, results, lineups and reviews.</span>
+          <span><b style="color:#b8b8ba">Player</b> — view scouting reports only; editing controls are hidden.</span>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- NON-ADMIN restricted -->
+    <sc-if value="{{ notAdmin }}" hint-placeholder-val="{{ false }}">
+      <div style="background:#141414;border:1px solid rgba(143,34,34,.4);border-radius:16px;padding:34px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:10px">
+        <span style="font-size:34px">🔒</span>
+        <span style="font-family:'Archivo',sans-serif;font-weight:800;font-size:18px;color:#fff">Admin access required</span>
+        <span style="font-size:13.5px;color:#9a9a9c;font-weight:500;max-width:420px;line-height:1.6">You're signed in as <b style="color:#cfcfcf">{{ meName }}</b> ({{ meRole }}). Only admins can manage who has coaching permissions. Use the demo switcher above to sign in as an admin.</span>
+      </div>
+    </sc-if>
+
+    <div style="margin-top:18px;display:flex;align-items:center;gap:8px;font-size:11.5px;color:#6e6e70;font-weight:500">
+      <span>ⓘ Prototype access control — saved in this browser only. Real cross-device permissions need a backend with logins.</span>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { users: [], me: null, meId: null, newName: '', newEmail: '', newRole: 'player', flash: '', flashOk: true };
+
+  async componentDidMount() {
+    let auth;
+    try { auth = await import('./auth.js?v=2'); } catch (e) { console.error('auth load failed', e); return; }
+    this.auth = auth;
+    const session = await auth.getSession();
+    if (!session) { location.href = 'Login.dc.html'; return; }
+    await this.refresh();
+  }
+  async refresh() {
+    const A = this.auth;
+    const [users, meId, me] = await Promise.all([
+      A.getUsers(),
+      A.getCurrentUserId(),
+      A.getCurrentUser(),
+    ]);
+    this.setState({ users, meId, me });
+  }
+  flashMsg(m, ok = true) { this.setState({ flash: m, flashOk: ok }); clearTimeout(this._t); this._t = setTimeout(() => this.setState({ flash: '' }), 3000); }
+
+  switchUser(id) { this.auth.setCurrentUser(id); location.reload(); }
+  onRole = async (e) => { await this.auth.setRole(e.target.dataset.id, e.target.value); this.refresh(); };
+  onRemove = async (e) => { await this.auth.removeUser(e.currentTarget.dataset.id); this.refresh(); };
+  onNewName = (e) => this.setState({ newName: e.target.value });
+  onNewEmail = (e) => this.setState({ newEmail: e.target.value });
+  onNewRole = (e) => this.setState({ newRole: e.target.value });
+  addPerson = async () => {
+    if (!this.state.newName.trim()) { this.flashMsg('Enter a name first'); return; }
+    if (!this.state.newEmail.toLowerCase().endsWith('@gustavus.edu')) { this.flashMsg('⚠ Only @gustavus.edu emails can be invited', false); return; }
+    try {
+      await this.auth.addUser({ name: this.state.newName, email: this.state.newEmail, role: this.state.newRole });
+      this.setState({ newName: '', newEmail: '', newRole: 'player' });
+      await this.refresh();
+      this.flashMsg('Invite sent · they will receive an email to set their password', true);
+    } catch (e) { this.flashMsg('⚠ ' + (e.message || 'Could not send invite'), false); }
+  };
+
+  renderVals() {
+    if (!this.auth) return { isAdmin: false, notAdmin: false };
+    const A = this.auth;
+    const me = this.state.me || { name: 'Guest', role: 'player', email: '' };
+    const avatar = (role) => { const c = A.roleColor(role); return `display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;background:${c.bg};color:${c.fg};font-family:Archivo,sans-serif;font-weight:800;font-size:13px;flex-shrink:0`; };
+    const isAdmin = me.role === 'admin';
+    const counts = this.state.users.reduce((m, u) => (m[u.role] = (m[u.role] || 0) + 1, m), {});
+
+    return {
+      isAdmin, notAdmin: !isAdmin,
+      meName: me.name, meRole: A.ROLE_LABEL[me.role],
+      userCount: this.state.users.length, adminCount: counts.admin || 0, coachCount: counts.coach || 0, playerCount: counts.player || 0,
+      switcher: this.state.users.map(u => {
+        const c = A.roleColor(u.role); const cur = u.id === this.state.meId;
+        return {
+          initials: A.initials(u.name), name: u.name, roleLabel: A.ROLE_LABEL[u.role], roleFg: c.fg,
+          avatarStyle: avatar(u.role),
+          chipStyle: `display:flex;align-items:center;gap:10px;cursor:pointer;border-radius:11px;padding:8px 14px 8px 8px;background:${cur ? 'rgba(198,160,74,.14)' : '#0e0e0e'};border:1px solid ${cur ? 'rgba(198,160,74,.5)' : 'rgba(255,255,255,.1)'}`,
+          onSwitch: () => this.switchUser(u.id),
+        };
+      }),
+      people: this.state.users.map(u => ({
+        id: u.id, name: u.name, email: u.email, role: u.role,
+        initials: A.initials(u.name), avatarStyle: avatar(u.role),
+        youTag: u.id === this.state.meId ? '  (you)' : '',
+      })),
+      onRole: this.onRole, onRemove: this.onRemove,
+      newName: this.state.newName, newEmail: this.state.newEmail, newRole: this.state.newRole,
+      onNewName: this.onNewName, onNewEmail: this.onNewEmail, onNewRole: this.onNewRole, addPerson: this.addPerson,
+      flash: this.state.flash, flashColor: this.state.flashOk ? '#5fbf7a' : '#e07b7b',
+    };
+  }
+}
+</script>
+</body>
+</html>

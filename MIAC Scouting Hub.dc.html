@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#c6a04a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="apple-touch-icon" href="./assets/miac-logo.png">
+<script>if('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');</script>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#0a0a0a;font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased}
+  @keyframes pulseGold{0%,100%{opacity:1}50%{opacity:.4}}
+  @media(max-width:768px){
+    .hub-header-inner{padding:12px 16px!important}
+    .hub-header-logo{height:34px!important}
+    .hub-header-title{font-size:14px!important}
+    .hub-header-sub{display:none!important}
+    .hub-header-nav{gap:14px!important}
+    .hub-header-nav a{font-size:12px!important}
+    .hub-content{padding:16px 16px 48px!important}
+    .hub-hero-grid{grid-template-columns:1fr!important}
+    .hub-hero-image{display:none!important}
+    .hub-teams-grid{grid-template-columns:repeat(2,1fr)!important;gap:12px!important}
+    .hub-team-card{height:140px!important}
+    .hub-team-abbr{font-size:80px!important}
+    .hub-team-name{font-size:18px!important}
+    .hub-section-header{flex-direction:column!important;align-items:flex-start!important;gap:8px!important}
+    .hub-your-team-grid{grid-template-columns:1fr!important}
+  }
+  @media(max-width:480px){
+    .hub-teams-grid{grid-template-columns:1fr!important}
+    .hub-team-card{height:120px!important}
+  }
+</style>
+</helmet>
+
+<x-import component-from-global-scope="image-slot" from="./image-slot.js" hint-size="100%,100%"></x-import>
+
+<div style="min-height:100vh;background:#0a0a0a;display:flex;flex-direction:column;align-items:center;font-family:'Inter',sans-serif">
+
+  <!-- ===== HEADER ===== -->
+  <div style="width:100%;background:linear-gradient(180deg,#161616,#0d0d0d);border-bottom:1px solid rgba(198,160,74,.3);position:sticky;top:0;z-index:20">
+    <div style="max-width:1320px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:16px 40px">
+      <div style="display:flex;align-items:center;gap:18px">
+        <img src="assets/miac-logo.png" alt="MIAC" style="height:46px;width:auto;display:block;filter:drop-shadow(0 2px 6px rgba(0,0,0,.6))">
+        <div style="width:1px;height:34px;background:rgba(255,255,255,.14)"></div>
+        <div style="display:flex;flex-direction:column;line-height:1.05">
+          <span style="font-family:'Archivo',sans-serif;font-weight:900;font-size:18px;letter-spacing:.02em;color:#fff">MEN'S SOCCER <span style="color:#e4c977">SCOUTING</span></span>
+          <span style="font-size:11.5px;letter-spacing:.16em;color:#c6a04a;font-weight:700;text-transform:uppercase">Gustavus Adolphus · Golden Gusties</span>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:22px">
+        <a href="MIAC Scouting Hub.dc.html" style="color:#cfcfcf;font-size:13px;font-weight:600;text-decoration:none">Teams</a>
+        <a href="Schedule.dc.html" style="color:#cfcfcf;font-size:13px;font-weight:600;text-decoration:none">Schedule</a>
+        <a href="Reports.dc.html" style="color:#cfcfcf;font-size:13px;font-weight:600;text-decoration:none">Reports</a>
+        <div style="position:relative">
+          <button onClick="{{ toggleUserMenu }}" style="display:flex;align-items:center;gap:9px;background:#000;border:1px solid rgba(255,255,255,.12);border-radius:999px;padding:4px 13px 4px 4px;cursor:pointer">
+            <span style="{{ me.avatarStyle }}">{{ me.initials }}</span>
+            <span style="display:flex;flex-direction:column;align-items:flex-start;line-height:1.15">
+              <span style="font-size:12.5px;font-weight:700;color:#fff">{{ me.name }}</span>
+              <span style="font-size:10px;font-weight:700;color:{{ me.roleFg }}">{{ me.roleLabel }}</span>
+            </span>
+            <span style="color:#8a8a8c;font-size:10px;margin-left:2px">▾</span>
+          </button>
+          <sc-if value="{{ userMenuOpen }}" hint-placeholder-val="{{ false }}">
+            <div onClick="{{ closeUserMenu }}" style="position:fixed;inset:0;z-index:40"></div>
+            <div style="position:absolute;right:0;top:calc(100% + 8px);z-index:41;width:220px;background:#161616;border:1px solid rgba(255,255,255,.14);border-radius:13px;box-shadow:0 24px 60px rgba(0,0,0,.6);padding:8px">
+              <a href="Admin.dc.html" style="{{ adminLinkStyle }}">⚙ Manage access</a>
+              <button onClick="{{ signOut }}" style="display:flex;align-items:center;gap:9px;width:100%;text-align:left;cursor:pointer;border:none;border-radius:9px;padding:10px 10px;background:transparent;color:#e07b7b;font-size:13px;font-weight:700">Sign out</button>
+            </div>
+          </sc-if>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hub-content" style="width:100%;max-width:1320px;padding:30px 40px 64px;display:flex;flex-direction:column">
+
+    <!-- ===== NEXT MATCH HERO (Option A style) ===== -->
+    <div style="position:relative;border-radius:18px;overflow:hidden;background:linear-gradient(110deg,#101010 0%,#181410 55%,#241c0c 100%);border:1px solid rgba(198,160,74,.32)">
+      <div style="position:absolute;inset:0;background:radial-gradient(120% 140% at 100% 0%,rgba(198,160,74,.16),transparent 55%)"></div>
+      <div style="position:relative;display:grid;grid-template-columns:1.1fr .9fr;gap:0;min-height:300px">
+        <div style="padding:34px 38px;display:flex;flex-direction:column;justify-content:center;gap:20px">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+            <div style="display:flex;align-items:center;gap:10px">
+              <span style="width:8px;height:8px;border-radius:50%;background:#c6a04a;animation:pulseGold 1.8s ease-in-out infinite"></span>
+              <span style="font-family:'Archivo',sans-serif;font-weight:800;font-size:12px;letter-spacing:.2em;color:#e4c977">{{ nextLabel }}</span>
+            </div>
+            <sc-if value="{{ canEdit }}" hint-placeholder-val="{{ false }}">
+              <button onClick="{{ openSched }}" style="background:rgba(198,160,74,.14);color:#e4c977;border:1px solid rgba(198,160,74,.4);border-radius:8px;padding:6px 12px;font-family:'Archivo',sans-serif;font-weight:800;font-size:11px;letter-spacing:.04em;cursor:pointer">⚙ Schedule</button>
+            </sc-if>
+          </div>
+          <div style="display:flex;align-items:center;gap:26px">
+            <div style="display:flex;flex-direction:column;align-items:center;gap:7px">
+              <div style="width:64px;height:64px;border-radius:13px;background:linear-gradient(135deg,#1a1a1a,#000);border:2px solid #c6a04a;display:flex;align-items:center;justify-content:center;font-family:'Archivo',sans-serif;font-weight:900;color:#e4c977;font-size:20px">GA</div>
+              <span style="font-size:11.5px;font-weight:700;color:#fff;letter-spacing:.04em">GUSTAVUS</span>
+            </div>
+            <span style="font-family:'Archivo',sans-serif;font-weight:800;font-size:22px;color:#6e6e70">VS</span>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:7px">
+              <div style="width:64px;height:64px;border-radius:13px;background:{{ nextCrest }};display:flex;align-items:center;justify-content:center;font-family:'Archivo',sans-serif;font-weight:900;color:#fff;font-size:18px">{{ nextAbbr }}</div>
+              <span style="font-size:11.5px;font-weight:700;color:#fff;letter-spacing:.04em">{{ nextShort }}</span>
+            </div>
+          </div>
+          <div style="display:flex;gap:30px;flex-wrap:wrap">
+            <div style="display:flex;flex-direction:column;gap:2px"><span style="font-size:10.5px;letter-spacing:.14em;color:#8a8a8c;font-weight:700">DATE</span><span style="font-size:15px;color:#fff;font-weight:600">{{ nextDate }}</span></div>
+            <div style="display:flex;flex-direction:column;gap:2px"><span style="font-size:10.5px;letter-spacing:.14em;color:#8a8a8c;font-weight:700">KICKOFF</span><span style="font-size:15px;color:#fff;font-weight:600">{{ nextTime }}</span></div>
+            <div style="display:flex;flex-direction:column;gap:2px"><span style="font-size:10.5px;letter-spacing:.14em;color:#8a8a8c;font-weight:700">PLAYING</span><span style="font-size:15px;color:#fff;font-weight:600">{{ nextHaLabel }}</span></div>
+            <div style="display:flex;flex-direction:column;gap:2px"><span style="font-size:10.5px;letter-spacing:.14em;color:#8a8a8c;font-weight:700">VENUE</span><span style="font-size:15px;color:#fff;font-weight:600">{{ nextVenue }}</span></div>
+          </div>
+          <sc-if value="{{ hasReport }}" hint-placeholder-val="{{ true }}">
+            <button onClick="{{ openNext }}" style="align-self:flex-start;margin-top:4px;background:linear-gradient(135deg,#c6a04a,#e4c977);color:#161616;border:none;border-radius:10px;padding:13px 24px;font-family:'Archivo',sans-serif;font-weight:800;font-size:14px;letter-spacing:.04em;cursor:pointer">View {{ nextShort }} Scouting Report →</button>
+          </sc-if>
+          <sc-if value="{{ noReport }}" hint-placeholder-val="{{ false }}">
+            <span style="align-self:flex-start;margin-top:4px;font-size:13px;color:#9a9a9c;font-weight:600;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:11px 18px">Non-conference opponent — no scouting page</span>
+          </sc-if>
+        </div>
+        <div style="position:relative">
+          <image-slot id="nextOppA" style="position:absolute;inset:0;width:100%;height:100%" shape="rect" fit="cover" placeholder="Drop opponent / matchday image"></image-slot>
+          <div style="position:absolute;inset:0;background:linear-gradient(90deg,#101010 0%,rgba(16,16,16,.5) 22%,transparent 50%);pointer-events:none"></div>
+          <div style="position:absolute;top:18px;right:18px;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);border:1px solid rgba(198,160,74,.4);border-radius:7px;padding:6px 12px;font-size:11px;font-weight:700;letter-spacing:.1em;color:#e4c977;pointer-events:none">UPCOMING OPPONENT</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== YOUR TEAM ===== -->
+    <div style="margin:32px 0 0">
+      <div class="hub-section-header" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <div style="display:flex;align-items:center;gap:12px">
+          <span style="font-family:'Archivo',sans-serif;font-weight:900;font-size:21px;color:#fff;letter-spacing:-.01em">Gustavus Adolphus</span>
+          <span style="background:rgba(198,160,74,.16);color:#e4c977;font-size:12px;font-weight:700;padding:3px 10px;border-radius:6px">Your Team</span>
+        </div>
+        <a href="Team.dc.html?team=GUS" style="font-size:13px;font-weight:700;color:#e4c977;text-decoration:none">Full roster & stats →</a>
+      </div>
+      <div class="hub-your-team-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+        <!-- record + form -->
+        <div style="background:#141414;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:20px 22px">
+          <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px">
+            <div style="width:52px;height:52px;border-radius:12px;background:linear-gradient(135deg,#1a1a1a,#000);border:2px solid #c6a04a;display:flex;align-items:center;justify-content:center;font-family:'Archivo',sans-serif;font-weight:900;color:#e4c977;font-size:16px;flex-shrink:0">GA</div>
+            <div style="display:flex;flex-direction:column;gap:3px">
+              <span style="font-family:'Archivo',sans-serif;font-weight:900;font-size:22px;color:#fff">{{ gusRecord }}</span>
+              <span style="font-size:12px;color:#8a8a8c;font-weight:600">{{ gusConfRecord }} MIAC · {{ gusFormation }}</span>
+            </div>
+          </div>
+          <div style="display:flex;gap:7px">
+            <sc-for list="{{ gusForm }}" as="f" hint-placeholder-count="5">
+              <div style="{{ f.style }}">{{ f.l }}</div>
+            </sc-for>
+          </div>
+        </div>
+        <!-- top scorers -->
+        <div style="background:#141414;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:20px 22px">
+          <span style="font-family:'Archivo',sans-serif;font-weight:800;font-size:13px;color:#fff;letter-spacing:.04em;display:block;margin-bottom:12px">TOP SCORERS</span>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <sc-for list="{{ gusTopScorers }}" as="p" hint-placeholder-count="4">
+              <div style="display:flex;align-items:center;justify-content:space-between">
+                <div style="display:flex;align-items:center;gap:9px;min-width:0">
+                  <span style="font-family:'Archivo',sans-serif;font-weight:800;font-size:12px;color:#e4c977;width:22px;flex-shrink:0">#{{ p.num }}</span>
+                  <span style="font-size:13px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ p.name }}</span>
+                </div>
+                <span style="font-size:12px;color:#cfcfcf;font-weight:600;flex-shrink:0;margin-left:8px">{{ p.g }}G {{ p.a }}A</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== MIAC PROGRAMS (Option B cards) ===== -->
+    <div class="hub-section-header" style="display:flex;align-items:center;justify-content:space-between;margin:38px 0 20px">
+      <div style="display:flex;align-items:center;gap:12px">
+        <span style="font-family:'Archivo',sans-serif;font-weight:900;font-size:21px;color:#fff;letter-spacing:-.01em">MIAC Programs</span>
+        <span style="background:rgba(198,160,74,.16);color:#e4c977;font-size:12px;font-weight:700;padding:3px 10px;border-radius:6px">{{ teamCount }} teams</span>
+      </div>
+      <span style="color:#7a7a7c;font-size:13px;font-weight:500">Tap a club for roster, formation & scouting notes</span>
+    </div>
+
+    <div class="hub-teams-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:18px">
+      <sc-for list="{{ teams }}" as="t" hint-placeholder-count="9">
+        <button onClick="{{ t.open }}" class="hub-team-card" style="position:relative;text-align:left;cursor:pointer;border:none;border-radius:16px;overflow:hidden;padding:0;height:178px;display:block;background:{{ t.crest }};transition:transform .18s ease,box-shadow .18s ease" style-hover="position:relative;text-align:left;cursor:pointer;border:none;border-radius:16px;overflow:hidden;padding:0;height:178px;display:block;background:{{ t.crest }};transform:translateY(-4px);box-shadow:0 18px 40px rgba(0,0,0,.55)">
+          <div style="position:absolute;inset:0;background:linear-gradient(135deg,rgba(0,0,0,.05) 0%,rgba(0,0,0,.45) 100%)"></div>
+          <div class="hub-team-abbr" style="position:absolute;right:-14px;bottom:-24px;font-family:'Archivo',sans-serif;font-weight:900;font-size:118px;color:rgba(255,255,255,.13);line-height:1;letter-spacing:-.04em">{{ t.abbr }}</div>
+          <div style="position:relative;height:100%;padding:18px 20px;display:flex;flex-direction:column;justify-content:space-between">
+            <div style="display:flex;align-items:center;justify-content:space-between">
+              <span style="background:rgba(0,0,0,.34);backdrop-filter:blur(3px);color:#fff;font-size:11px;font-weight:700;padding:4px 9px;border-radius:6px;letter-spacing:.06em">{{ t.record }} · {{ t.rank }}</span>
+              <span style="width:9px;height:9px;border-radius:50%;background:#7CFC9A;box-shadow:0 0 0 3px rgba(124,252,154,.25)"></span>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:3px">
+              <span class="hub-team-name" style="font-family:'Archivo',sans-serif;font-weight:900;font-size:22px;color:#fff;line-height:1;letter-spacing:-.01em">{{ t.name }}</span>
+              <span style="font-size:12.5px;color:rgba(255,255,255,.82);font-weight:600">{{ t.mascot }} · View report →</span>
+            </div>
+          </div>
+        </button>
+      </sc-for>
+    </div>
+
+    <!-- ===== OUT OF CONFERENCE PROGRAMS ===== -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin:40px 0 20px">
+      <div style="display:flex;align-items:center;gap:12px">
+        <span style="font-family:'Archivo',sans-serif;font-weight:900;font-size:21px;color:#fff;letter-spacing:-.01em">Out of Conference Programs</span>
+        <span style="background:rgba(255,255,255,.08);color:#b8b8ba;font-size:12px;font-weight:700;padding:3px 10px;border-radius:6px">{{ nonConfCount }} teams</span>
+      </div>
+      <span style="color:#7a7a7c;font-size:13px;font-weight:500">Non-conference opponents Gustavus plays this season</span>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:18px">
+      <sc-for list="{{ nonConf }}" as="t" hint-placeholder-count="4">
+        <button onClick="{{ t.open }}" style="position:relative;text-align:left;cursor:pointer;border:none;border-radius:16px;overflow:hidden;padding:0;height:178px;display:block;background:{{ t.crest }};transition:transform .18s ease,box-shadow .18s ease" style-hover="position:relative;text-align:left;cursor:pointer;border:none;border-radius:16px;overflow:hidden;padding:0;height:178px;display:block;background:{{ t.crest }};transform:translateY(-4px);box-shadow:0 18px 40px rgba(0,0,0,.55)">
+          <div style="position:absolute;inset:0;background:linear-gradient(135deg,rgba(0,0,0,.05) 0%,rgba(0,0,0,.45) 100%)"></div>
+          <div style="position:absolute;right:-14px;bottom:-24px;font-family:'Archivo',sans-serif;font-weight:900;font-size:118px;color:rgba(255,255,255,.13);line-height:1;letter-spacing:-.04em">{{ t.abbr }}</div>
+          <div style="position:relative;height:100%;padding:18px 20px;display:flex;flex-direction:column;justify-content:space-between">
+            <div style="display:flex;align-items:center;justify-content:space-between">
+              <span style="background:rgba(0,0,0,.34);backdrop-filter:blur(3px);color:#fff;font-size:11px;font-weight:700;padding:4px 9px;border-radius:6px;letter-spacing:.06em">{{ t.badge }}</span>
+              <span style="background:rgba(0,0,0,.34);backdrop-filter:blur(3px);color:#cfcfcf;font-size:10px;font-weight:800;letter-spacing:.1em;padding:4px 9px;border-radius:6px">NON-CONF</span>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:3px">
+              <span style="font-family:'Archivo',sans-serif;font-weight:900;font-size:22px;color:#fff;line-height:1;letter-spacing:-.01em">{{ t.name }}</span>
+              <span style="font-size:12.5px;color:rgba(255,255,255,.82);font-weight:600">{{ t.sub }}</span>
+            </div>
+          </div>
+        </button>
+      </sc-for>
+    </div>
+  </div>
+
+  <!-- ============ SCHEDULE IMPORT MODAL ============ -->
+  <sc-if value="{{ schedOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.72);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:24px">
+      <div style="width:min(760px,96vw);max-height:90vh;background:#111;border:1px solid rgba(198,160,74,.3);border-radius:18px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 40px 100px rgba(0,0,0,.7)">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 24px;border-bottom:1px solid rgba(255,255,255,.1);background:linear-gradient(180deg,#181818,#111)">
+          <div style="display:flex;flex-direction:column;gap:2px">
+            <span style="font-family:'Archivo',sans-serif;font-weight:900;font-size:17px;color:#fff">Team Schedule</span>
+            <span style="font-size:11.5px;color:#8a8a8c;font-weight:600">Drives the next-match scouting hero</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px">
+            <span style="font-size:12.5px;font-weight:700;color:#5fbf7a">{{ schedFlash }}</span>
+            <button onClick="{{ closeSched }}" style="background:transparent;border:1px solid rgba(255,255,255,.2);color:#cfcfcf;border-radius:8px;padding:9px 16px;font-weight:700;font-size:13px;cursor:pointer">Cancel</button>
+            <button onClick="{{ saveSched }}" style="background:linear-gradient(135deg,#c6a04a,#e4c977);color:#161616;border:none;border-radius:8px;padding:9px 20px;font-family:'Archivo',sans-serif;font-weight:800;font-size:13px;cursor:pointer">Save schedule</button>
+          </div>
+        </div>
+        <div style="padding:20px 24px;overflow-y:auto;display:flex;flex-direction:column;gap:22px">
+          <div style="display:flex;flex-direction:column;gap:9px">
+            <span style="font-weight:700;font-size:13px;color:#fff">Paste schedule</span>
+            <span style="font-size:11.5px;color:#7a7a7c;line-height:1.55">Paste the <b style="color:#cfcfcf">.ics</b> calendar <i>or</i> the <b style="color:#cfcfcf">Text</b> schedule straight from gogusties.com (Men's Soccer → Schedule → <b style="color:#cfcfcf">Text</b> / <b style="color:#cfcfcf">Sync</b>) — both work. Or one game per line: <span style="font-family:monospace;color:#9bd6a8">2026-09-19, St. Olaf, H, 1:00 PM, Hollingsworth Field</span></span>
+            <textarea value="{{ schedText }}" onChange="{{ onSchedText }}" placeholder="BEGIN:VCALENDAR …&#10;— or —&#10;2026-09-19, St. Olaf, H, 1:00 PM, Hollingsworth Field" style="width:100%;height:140px;background:#0d0d0d;border:1px solid rgba(255,255,255,.12);border-radius:9px;padding:12px;color:#e6e6e6;font-size:12px;font-family:monospace;line-height:1.5;outline:none;resize:vertical"></textarea>
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+              <button onClick="{{ parseSched }}" style="background:rgba(198,160,74,.16);color:#e4c977;border:1px solid rgba(198,160,74,.4);border-radius:8px;padding:8px 14px;font-weight:700;font-size:12.5px;cursor:pointer">Parse &amp; load below</button>
+              <label style="display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,.06);color:#cfcfcf;border:1px solid rgba(255,255,255,.16);border-radius:8px;padding:8px 14px;font-weight:700;font-size:12.5px;cursor:pointer">
+                ↑ Upload file
+                <input type="file" accept=".txt,.csv,.ics,text/calendar,text/plain" onChange="{{ onSchedFile }}" style="display:none">
+              </label>
+              <span style="font-size:11px;color:#6e6e70;font-weight:600">.txt, .csv or .ics</span>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <div style="display:flex;align-items:center;justify-content:space-between">
+              <span style="font-family:'Archivo',sans-serif;font-weight:800;font-size:14px;color:#fff">Fixtures · {{ schedCount }}</span>
+              <button onClick="{{ resetSched }}" style="background:transparent;color:#9a9a9c;border:1px solid rgba(255,255,255,.16);border-radius:7px;padding:6px 12px;font-weight:700;font-size:11.5px;cursor:pointer">Reset to 2026 schedule</button>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <sc-for list="{{ fixtures }}" as="f" hint-placeholder-count="6">
+                <div style="display:grid;grid-template-columns:34px 92px 1fr 28px;gap:12px;align-items:center;background:#0e0e0e;border:1px solid rgba(255,255,255,.06);border-radius:9px;padding:9px 12px">
+                  <span style="{{ f.haStyle }}">{{ f.haLabel }}</span>
+                  <span style="font-size:12.5px;color:#cfcfcf;font-weight:600">{{ f.dateLabel }}</span>
+                  <span style="display:flex;flex-direction:column;line-height:1.25;min-width:0">
+                    <span style="font-size:13.5px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ f.name }}</span>
+                    <span style="{{ f.confStyle }}">{{ f.confLabel }} · {{ f.time }}</span>
+                  </span>
+                  <button onClick="{{ f.remove }}" style="background:transparent;border:none;color:#8f2222;font-size:17px;font-weight:800;cursor:pointer;line-height:1">×</button>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { me: null, users: [], meId: null, userMenuOpen: false, schedule: [], schedOpen: false, schedText: '', schedFlash: '', schedDraft: [], nextMatch: null, nonConf: [] };
+
+  async componentDidMount() {
+    try { this.auth = await import('./auth.js?v=2'); } catch (e) { console.error('auth load failed', e); }
+    try { this.mod = await import('./data.js?v=11'); } catch (e) { console.error('data load failed', e); }
+    const a = this.auth, m = this.mod;
+    // Redirect to login if not signed in
+    const session = await a.getSession();
+    if (!session) { location.href = 'Login.dc.html'; return; }
+    const [users, meId, me, schedule, nextMatch, nonConf, gusTeam] = await Promise.all([
+      a ? a.getUsers() : Promise.resolve([]),
+      a ? a.getCurrentUserId() : Promise.resolve(null),
+      a ? a.getCurrentUser() : Promise.resolve({ name: 'Guest', role: 'player', email: '' }),
+      m ? m.getSchedule() : Promise.resolve([]),
+      m ? m.getNextMatch() : Promise.resolve(null),
+      m ? m.getNonConfOpponents() : Promise.resolve([]),
+      m ? m.getTeam('GUS') : Promise.resolve(null),
+    ]);
+    this.setState({ users, meId, me, schedule, nextMatch, nonConf, gusTeam });
+  }
+
+  toggleUserMenu = () => this.setState(s => ({ userMenuOpen: !s.userMenuOpen }));
+  closeUserMenu = () => this.setState({ userMenuOpen: false });
+  signOut = async () => { await this.auth.signOut(); location.href = 'Login.dc.html'; };
+
+  schedFlashMsg(msg) { this.setState({ schedFlash: msg }); clearTimeout(this._sf); this._sf = setTimeout(() => this.setState({ schedFlash: '' }), 2600); }
+
+  openSched = async () => {
+    const me = this.state.me;
+    if (!(me && (me.role === 'coach' || me.role === 'admin'))) return;
+    const schedule = this.mod ? await this.mod.getSchedule() : [];
+    this.setState({ schedOpen: true, schedText: '', schedFlash: '', schedDraft: schedule.map(x => ({ ...x })) });
+  };
+
+  closeSched = () => this.setState({ schedOpen: false });
+  onSchedText = (e) => this.setState({ schedText: e.target.value });
+  parseSched = () => { const f = this.mod.parseScheduleText(this.state.schedText || ''); if (f.length) { this.setState({ schedDraft: f }); this.schedFlashMsg('Parsed ' + f.length + ' games'); } else this.schedFlashMsg('Nothing parsed — check the format'); };
+  onSchedFile = (e) => {
+    const file = e.target.files && e.target.files[0];
+    e.target.value = '';
+    if (!file) return;
+    const r = new FileReader();
+    r.onload = () => {
+      const text = String(r.result || '');
+      const f = this.mod.parseScheduleText(text);
+      if (f.length) { this.setState({ schedText: text, schedDraft: f }); this.schedFlashMsg('Loaded ' + f.length + ' games from ' + file.name); }
+      else { this.setState({ schedText: text }); this.schedFlashMsg('Could not parse ' + file.name); }
+    };
+    r.onerror = () => this.schedFlashMsg('Could not read that file');
+    r.readAsText(file);
+  };
+  removeFixture = (i) => this.setState(s => ({ schedDraft: s.schedDraft.filter((_, idx) => idx !== i) }));
+
+  saveSched = async () => {
+    const list = this.state.schedDraft || [];
+    await this.mod.saveSchedule(list);
+    const [nextMatch, nonConf] = await Promise.all([this.mod.getNextMatch(), this.mod.getNonConfOpponents()]);
+    this.setState({ schedule: list, schedOpen: false, nextMatch, nonConf });
+  };
+
+  resetSched = async () => {
+    await this.mod.clearSchedule();
+    const [schedule, nextMatch, nonConf] = await Promise.all([this.mod.getSchedule(), this.mod.getNextMatch(), this.mod.getNonConfOpponents()]);
+    this.setState({ schedDraft: schedule.map(x => ({ ...x })), schedule, nextMatch, nonConf });
+    this.schedFlashMsg('Reset to sample');
+  };
+
+  open(abbr) { location.href = `Team.dc.html?team=${abbr}`; }
+
+  _gusVals() {
+    const t = this.state.gusTeam;
+    if (!t) return { gusRecord: '—', gusConfRecord: '—', gusFormation: '4-3-3', gusForm: [], gusTopScorers: [] };
+    const RC = { W: { bg: '#1c7a45', fg: '#9bf3bf' }, D: { bg: '#44454a', fg: '#dadadc' }, L: { bg: '#8f2222', fg: '#ffc9c9' } };
+    const sq = r => `display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:7px;font-family:Archivo,sans-serif;font-weight:800;font-size:13px;background:${RC[r].bg};color:${RC[r].fg}`;
+    const topScorers = [...t.roster]
+      .filter(p => p.pos !== 'GK')
+      .sort((a, b) => (b.g * 2 + b.a) - (a.g * 2 + a.a))
+      .slice(0, 4)
+      .map(p => ({ num: p.num, name: p.name, g: p.g, a: p.a }));
+    return {
+      gusRecord: t.record,
+      gusConfRecord: t.confRecord,
+      gusFormation: t.formation,
+      gusForm: t.form.map(f => ({ l: f, style: sq(f) })),
+      gusTopScorers: topScorers,
+    };
+  }
+
+  authVals() {
+    const A = this.auth;
+    const me = this.state.me;
+    if (!A || !me) return { canEdit: false, me: { initials: '·', name: 'Loading…', roleLabel: '', roleFg: '#8a8a8c', avatarStyle: 'display:flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.1);color:#888;font-family:Archivo,sans-serif;font-weight:800;font-size:13px' }, switcher: [], userMenuOpen: false, toggleUserMenu: this.toggleUserMenu, closeUserMenu: this.closeUserMenu, adminLinkStyle: 'display:none' };
+    const avatar = (role, sz) => { const c = A.roleColor(role); return `display:flex;align-items:center;justify-content:center;width:${sz}px;height:${sz}px;border-radius:50%;background:${c.bg};color:${c.fg};font-family:Archivo,sans-serif;font-weight:800;font-size:${sz>34?13:11}px;flex-shrink:0`; };
+    const mc = A.roleColor(me.role);
+    return {
+      canEdit: me.role === 'coach' || me.role === 'admin',
+      me: { initials: A.initials(me.name), name: me.name, roleLabel: A.ROLE_LABEL[me.role], roleFg: mc.fg, avatarStyle: avatar(me.role, 38) },
+      userMenuOpen: this.state.userMenuOpen,
+      toggleUserMenu: this.toggleUserMenu, closeUserMenu: this.closeUserMenu,
+      switcher: this.state.users.map(u => {
+        const c = A.roleColor(u.role); const cur = u.id === this.state.meId;
+        return {
+          initials: A.initials(u.name), name: u.name, roleLabel: A.ROLE_LABEL[u.role], roleFg: c.fg,
+          avatarStyle: avatar(u.role, 32),
+          rowStyle: `display:flex;align-items:center;gap:11px;width:100%;text-align:left;cursor:pointer;border:none;border-radius:9px;padding:9px 10px;background:${cur ? 'rgba(198,160,74,.12)' : 'transparent'}`,
+          checkStyle: cur ? 'color:#e4c977;font-size:13px;font-weight:800' : 'color:transparent;font-size:13px',
+          onSwitch: () => this.switchUser(u.id),
+        };
+      }),
+      adminLinkStyle: (me.role === 'admin')
+        ? 'display:flex;align-items:center;gap:8px;padding:6px 10px;color:#e4c977;font-size:13px;font-weight:700;text-decoration:none;cursor:pointer'
+        : 'display:none',
+      signOut: this.signOut,
+    };
+  }
+
+  renderVals() {
+    const teams = [
+      { name: 'Augsburg',     short: 'Augsburg',  mascot: 'Auggies',  abbr: 'AUG', crest: 'linear-gradient(135deg,#7a2230,#52121c)', record: '6–3–1', rank: '#5' },
+      { name: 'Bethel',       short: 'Bethel',    mascot: 'Royals',   abbr: 'BU',  crest: 'linear-gradient(135deg,#0a4b9c,#012f66)', record: '8–1–1', rank: '#2' },
+      { name: 'Carleton',     short: 'Carleton',  mascot: 'Knights',  abbr: 'CAR', crest: 'linear-gradient(135deg,#0e3a6e,#04203f)', record: '5–4–1', rank: '#6' },
+      { name: 'Concordia',    short: 'Concordia', mascot: 'Cobbers',  abbr: 'CON', crest: 'linear-gradient(135deg,#5b0e2d,#370819)', record: '4–5–1', rank: '#7' },
+      { name: 'Hamline',      short: 'Hamline',   mascot: 'Pipers',   abbr: 'HAM', crest: 'linear-gradient(135deg,#c8102e,#88081f)', record: '3–6–1', rank: '#8' },
+      { name: 'Macalester',   short: 'Macalester',mascot: 'Scots',    abbr: 'MAC', crest: 'linear-gradient(135deg,#f47920,#c1560f)', record: '7–2–1', rank: '#3' },
+      { name: "Saint John's", short: "St. John's",mascot: 'Johnnies', abbr: 'SJU', crest: 'linear-gradient(135deg,#b1232e,#7a0f18)', record: '9–0–1', rank: '#1' },
+      { name: "Saint Mary's", short: "St. Mary's",mascot: 'Cardinals',abbr: 'SMU', crest: 'linear-gradient(135deg,#9d2235,#6a0f1f)', record: '2–7–1', rank: '#9' },
+      { name: 'St. Olaf',     short: 'St. Olaf',  mascot: 'Oles',     abbr: 'OLE', crest: 'linear-gradient(135deg,#1a1a1a,#000000)', record: '6–3–1', rank: '#4' },
+      { name: 'St. Scholastica', short: 'Scholastica', mascot: 'Saints', abbr: 'CSS', crest: 'linear-gradient(135deg,#0e6ba8,#063a5c)', record: '4–5–1', rank: '#10' },
+    ];
+
+    const nm = this.state.nextMatch;
+    const fmtDate = (iso) => { if (!iso) return 'TBD'; const d = new Date(iso + 'T12:00:00'); if (isNaN(d)) return 'TBD'; const wd = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'], mo = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']; return `${wd[d.getDay()]} · ${mo[d.getMonth()]} ${d.getDate()}`; };
+    const hasReport = !!(nm && nm.team);
+    const nextAbbr = nm ? (nm.team ? nm.team.abbr : (nm.name || '?').replace(/[^A-Za-z]/g, '').slice(0, 3).toUpperCase()) : '—';
+    const nextShort = nm ? (nm.team ? nm.team.short : nm.name) : 'No games scheduled';
+    const nextCrest = nm && nm.team ? nm.team.crest : 'linear-gradient(135deg,#2a2a2a,#0d0d0d)';
+    const draft = this.state.schedDraft || [];
+
+    const nonConf = (this.state.nonConf || []).map(t => ({
+      ...t,
+      badge: t.league ? (t.record && t.record !== '—' ? `${t.record} · ${t.league}` : t.league) : (t.record || '—'),
+      sub: (t.mascot ? t.mascot + ' · ' : '') + 'View report →',
+      open: () => { location.href = `Team.dc.html?team=${t.abbr}`; },
+    }));
+
+    return {
+      ...this.authVals(),
+      ...this._gusVals(),
+      teams: teams.map(t => ({ ...t, open: () => this.open(t.abbr) })),
+      teamCount: teams.length,
+      nonConf, nonConfCount: nonConf.length,
+      nextLabel: nm && nm.isPast ? 'LAST MATCH · SEASON ENDED' : 'NEXT MATCH · SCOUTING LIVE',
+      nextAbbr, nextShort, nextCrest,
+      nextDate: nm ? fmtDate(nm.date) : 'TBD',
+      nextTime: nm && nm.time ? nm.time : 'TBD',
+      nextVenue: nm && nm.venue ? nm.venue : 'TBD',
+      nextHaLabel: nm ? (nm.home ? 'Home' : 'Away') : '—',
+      hasReport, noReport: !!(nm && !nm.team),
+      openNext: () => { if (hasReport) location.href = `Team.dc.html?team=${nm.team.abbr}`; },
+      schedOpen: this.state.schedOpen, schedText: this.state.schedText, schedFlash: this.state.schedFlash,
+      openSched: this.openSched, closeSched: this.closeSched, onSchedText: this.onSchedText, parseSched: this.parseSched, saveSched: this.saveSched, resetSched: this.resetSched, onSchedFile: this.onSchedFile,
+      schedCount: draft.length,
+      fixtures: draft.map((f, i) => ({
+        dateLabel: fmtDate(f.date), time: f.time || 'TBD', name: f.name || 'Opponent',
+        haLabel: f.home ? 'H' : 'A',
+        haStyle: `display:flex;align-items:center;justify-content:center;width:34px;height:26px;border-radius:6px;font-family:Archivo,sans-serif;font-weight:800;font-size:11px;flex-shrink:0;background:${f.home ? 'rgba(95,191,122,.18)' : 'rgba(198,160,74,.16)'};color:${f.home ? '#5fbf7a' : '#e4c977'}`,
+        confLabel: f.conf ? 'MIAC' : 'Non-conf',
+        confStyle: `font-size:10.5px;font-weight:700;color:${f.conf ? '#e4c977' : '#7a7a7c'}`,
+        remove: () => this.removeFixture(i),
+      })),
+    };
+  }
+}
+</script>
+</body>
+</html>

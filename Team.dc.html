@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#c6a04a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="apple-touch-icon" href="./assets/miac-logo.png">
+<script>if('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');</script>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#0a0a0a;font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased}
+  video{pointer-events:auto!important;position:relative;z-index:5}
+  ::-webkit-scrollbar{width:9px;height:9px}
+  ::-webkit-scrollbar-thumb{background:rgba(255,255,255,.16);border-radius:8px}
+  ::-webkit-scrollbar-track{background:transparent}
+  textarea,input,select{font-family:'Inter',sans-serif}
+  input:focus,textarea:focus,select:focus{border-color:rgba(198,160,74,.6)!important}
+  select option{background:#161616;color:#fff}
+  @media(max-width:768px){
+    .team-topbar{padding:10px 16px!important}
+    .team-topbar-links{display:none!important}
+    .team-content{padding:16px 14px 56px!important}
+    .team-hero{padding:18px 18px!important}
+    .team-hero-name{font-size:24px!important}
+    .team-row-grid{grid-template-columns:1fr!important}
+    .team-results-grid{grid-template-columns:1fr!important}
+    .team-row3-grid{grid-template-columns:1fr!important}
+    .team-pitch{min-height:380px!important}
+    .team-roster-scroll{max-height:320px!important}
+    .team-lm-stats{gap:6px!important}
+    .team-stat-col{grid-template-columns:24px 1fr 28px 28px!important}
+  }
+  @media(max-width:480px){
+    .team-hero-name{font-size:20px!important}
+    .team-content{padding:12px 10px 56px!important}
+  }
+</style>
+</helmet>
+
+<div style="min-height:100vh;background:#0a0a0a;display:flex;flex-direction:column;align-items:center;font-family:'Inter',sans-serif">
+
+  <!-- top bar -->
+  <div style="width:100%;background:linear-gradient(180deg,#161616,#0d0d0d);border-bottom:1px solid rgba(198,160,74,.3);position:sticky;top:0;z-index:30">
+    <div class="team-topbar" style="max-width:1320px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:13px 40px">
+      <div style="display:flex;align-items:center;gap:18px">
+        <a href="MIAC Scouting Hub.dc.html" style="display:flex;align-items:center;gap:14px;text-decoration:none">
+          <span style="color:#cfcfcf;font-size:13px;font-weight:700">← Hub</span>
+          <div style="width:1px;height:26px;background:rgba(255,255,255,.14)"></div>
+          <img src="assets/miac-logo.png" alt="MIAC" style="height:34px;width:auto;display:block">
+        </a>
+        <a class="team-topbar-links" href="Schedule.dc.html" style="color:#cfcfcf;font-size:13px;font-weight:600;text-decoration:none">Schedule</a>
+        <a class="team-topbar-links" href="Reports.dc.html" style="color:#cfcfcf;font-size:13px;font-weight:600;text-decoration:none">Reports</a>
+      </div>
+      <div style="display:flex;align-items:center;gap:14px">
+        <sc-if value="{{ isCoach }}" hint-placeholder-val="{{ true }}">
+          <span style="display:flex;align-items:center;gap:10px">
+            <button onClick="{{ openSaveReport }}" style="background:rgba(198,160,74,.14);color:#e4c977;border:1px solid rgba(198,160,74,.45);border-radius:9px;padding:9px 16px;font-family:'Archivo',sans-serif;font-weight:800;font-size:12.5px;letter-spacing:.03em;cursor:pointer">＋ Save report</button>
+            <button onClick="{{ openEditor }}" style="background:linear-gradient(135deg,#c6a04a,#e4c977);color:#161616;border:none;border-radius:9px;padding:9px 16px;font-family:'Archivo',sans-serif;font-weight:800;font-size:12.5px;letter-spacing:.03em;cursor:pointer">⚙ Manage Data</button>
+          </span>
+        </sc-if>
+        <div style="position:relative">
+          <button onClick="{{ toggleUserMenu }}" style="display:flex;align-items:center;gap:9px;background:#000;border:1px solid rgba(255,255,255,.12);border-radius:999px;padding:4px 13px 4px 4px;cursor:pointer">
+            <span style="{{ me.avatarStyle }}">{{ me.initials }}</span>
+            <span style="display:flex;flex-direction:column;align-items:flex-start;line-height:1.15">
+              <span style="font-size:12.5px;font-weight:700;color:#fff">{{ me.name }}</span>
+              <span style="font-size:10px;font-weight:700;color:{{ me.roleFg }}">{{ me.roleLabel }}</span>
+            </span>
+            <span style="color:#8a8a8c;font-size:10px;margin-left:2px">▾</span>
+          </button>
+          <sc-if value="{{ userMenuOpen }}" hint-placeholder-val="{{ false }}">
+            <div onClick="{{ closeUserMenu }}" style="position:fixed;inset:0;z-index:40"></div>
+            <div style="position:absolute;right:0;top:calc(100% + 8px);z-index:41;width:272px;background:#161616;border:1px solid rgba(255,255,255,.14);border-radius:13px;box-shadow:0 24px 60px rgba(0,0,0,.6);padding:8px">
+              <div style="font-size:10px;letter-spacing:.1em;color:#6e6e70;font-weight:800;padding:8px 10px 6px">SWITCH USER · DEMO</div>
+              <sc-for list="{{ switcher }}" as="u" hint-placeholder-count="5">
+                <button onClick="{{ u.onSwitch }}" style="{{ u.rowStyle }}">
+                  <span style="{{ u.avatarStyle }}">{{ u.initials }}</span>
+                  <span style="display:flex;flex-direction:column;align-items:flex-start;line-height:1.2;flex:1;min-width:0">
+                    <span style="font-size:13px;font-weight:700;color:#fff">{{ u.name }}</span>
+                    <span style="font-size:10.5px;font-weight:700;color:{{ u.roleFg }}">{{ u.roleLabel }}</span>
+                  </span>
+                  <span style="{{ u.checkStyle }}">✓</span>
+                </button>
+              </sc-for>
+              <a href="Admin.dc.html" style="{{ adminLinkStyle }}">⚙ Manage access</a>
+            </div>
+          </sc-if>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="team-content" style="width:100%;max-width:1320px;padding:26px 40px 64px">
+
+    <!-- team hero -->
+    <div style="display:flex;align-items:center;gap:20px;margin-bottom:24px">
+      <div style="width:72px;height:72px;border-radius:16px;background:{{ crest }};display:flex;align-items:center;justify-content:center;font-family:'Archivo',sans-serif;font-weight:900;font-size:22px;color:{{ ink }};border:1px solid rgba(255,255,255,.14);flex-shrink:0">{{ abbr }}</div>
+      <div style="display:flex;flex-direction:column;gap:4px">
+        <div style="display:flex;align-items:center;gap:12px">
+          <span style="font-family:'Archivo',sans-serif;font-weight:900;font-size:30px;color:#fff;letter-spacing:-.01em">{{ name }}</span>
+          <span style="background:rgba(198,160,74,.16);color:#e4c977;font-size:12px;font-weight:800;padding:4px 10px;border-radius:6px">{{ leagueBadge }}</span>
+          <span style="{{ customBadgeStyle }}">{{ customBadge }}</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:18px;color:#9a9a9c;font-size:13.5px;font-weight:600">
+          <span>{{ mascot }}</span><span style="color:#3c3c3e">|</span>
+          <span>Overall <b style="color:#fff;font-weight:700">{{ record }}</b></span>
+          <span>{{ confName }} <b style="color:#fff;font-weight:700">{{ confRecord }}</b></span>
+          <span>Formation <b style="color:#e4c977;font-weight:700">{{ formation }}</b></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- page tabs -->
+    <div style="display:flex;gap:8px;margin-bottom:22px">
+      <button onClick="{{ setOverview }}" style="{{ pageTabStyleOverview }}">Overview</button>
+      <button onClick="{{ setClips }}" style="{{ pageTabStyleClips }}">Video Clips <span style="background:rgba(0,0,0,.25);border-radius:5px;padding:1px 7px;font-size:11px;margin-left:4px">{{ clipsCount }}</span></button>
+    </div>
+
+    <div style="{{ overviewStyle }}">
+
+    <!-- ROW 1 -->
+    <div class="team-row-grid" style="display:grid;grid-template-columns:1.35fr 1fr;gap:18px;align-items:stretch">
+      <div style="background:#141414;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:22px 24px;display:flex;flex-direction:column">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+          <span style="font-family:'Archivo',sans-serif;font-weight:800;font-size:15px;color:#fff;letter-spacing:.02em">TACTICAL REVIEW</span>
+          <span style="font-size:11px;font-weight:700;color:{{ saveColor }}">{{ saveLabel }}</span>
+        </div>
+        <textarea value="{{ tactical }}" onChange="{{ onTactical }}" readOnly="{{ readOnly }}" placeholder="Coaches: enter the tactical scouting review for this opponent…" style="flex:1;min-height:300px;width:100%;resize:vertical;background:#0d0d0d;border:1px solid rgba(255,255,255,.1);border-radius:11px;padding:16px;color:#e6e6e6;font-size:14.5px;line-height:1.7;outline:none"></textarea>
+        <span style="margin-top:12px;font-size:12px;color:#6e6e70;font-weight:500">{{ editorHint }}</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:18px">
+        <div style="background:#141414;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:20px 22px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+            <span style="font-family:'Archivo',sans-serif;font-weight:800;font-size:15px;color:#fff;letter-spacing:.02em">LAST MATCH</span>
+            <span style="font-size:11.5px;color:#8a8a8c;font-weight:600">{{ lmMeta }}</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:14px;margin-bottom:18px">
+            <div style="{{ lmBadgeStyle }}">{{ lmRes }}</div>
+            <div style="display:flex;flex-direction:column;line-height:1.1">
+              <span style="font-family:'Archivo',sans-serif;font-weight:900;font-size:26px;color:#fff">{{ lmScore }}</span>
+              <span style="font-size:12.5px;color:#9a9a9c;font-weight:600">{{ lmOpp }}</span>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:9px">
+            <sc-for list="{{ lmStats }}" as="s" hint-placeholder-count="6">
+              <div style="display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px">
+                <span style="text-align:right;font-size:13px;font-weight:700;color:#fff">{{ s.v }}</span>
+                <span style="font-size:10.5px;letter-spacing:.08em;color:#7a7a7c;font-weight:700;text-transform:uppercase;min-width:78px;text-align:center">{{ s.k }}</span>
+                <span style="font-size:13px;font-weight:600;color:#8a8a8c">{{ s.o }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+        <div style="background:#141414;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:20px 22px">
+          <span style="font-family:'Archivo',sans-serif;font-weight:800;font-size:15px;color:#fff;letter-spacing:.02em">LAST 5</span>
+          <div style="display:flex;gap:9px;margin-top:14px">
+            <sc-for list="{{ form }}" as="f" hint-placeholder-count="5">
+              <div style="{{ f.style }}">{{ f.l }}</div>
+            </sc-for>
+          </div>
+          <div style="display:flex;gap:16px;margin-top:14px;font-size:11px;color:#7a7a7c;font-weight:600">
+            <span style="display:flex;align-items:center;gap:6px"><span style="width:9px;height:9px;border-radius:3px;background:#1c7a45"></span>Win</span>
+            <span style="display:flex;align-items:center;gap:6px"><span style="width:9px;height:9px;border-radius:3px;background:#44454a"></span>Draw</span>
+            <span style="display:flex;align-items:center;gap:6px"><span style="width:9px;height:9px;border-radius:3px;background:#8f2222"></span>Loss</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ROW 2 -->
+    <div style="background:#141414;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:22px 24px;margin-top:18px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+        <span style="font-family:'Archivo',sans-serif;font-weight:800;font-size:15px;color:#fff;letter-spacing:.02em">{{ seasonLabel }} SEASON RESULTS</span>
+        <span style="font-size:12px;color:#7a7a7c;font-weight:600">{{ resultCount }} matches · MIAC games marked</span>
+      </div>
+      <div class="team-results-grid" style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px">
+        <sc-for list="{{ results }}" as="r" hint-placeholder-count="14">
+          <div style="display:flex;align-items:center;gap:13px;background:#0e0e0e;border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:10px 14px">
+            <div style="{{ r.badgeStyle }}">{{ r.res }}</div>
+            <div style="display:flex;flex-direction:column;line-height:1.2;min-width:0;flex:1">
+              <span style="font-size:13.5px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.haText }} {{ r.opp }}</span>
+              <span style="font-size:11px;color:#7a7a7c;font-weight:600">{{ r.date }}{{ r.confText }}</span>
+            </div>
+            <span style="font-family:'Archivo',sans-serif;font-weight:800;font-size:15px;color:#e8e8e8">{{ r.score }}</span>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+
+    <!-- ROW 3 -->
+    <div class="team-row3-grid" style="display:grid;grid-template-columns:1.05fr 1fr;gap:18px;margin-top:18px;align-items:stretch">
+      <div style="background:#141414;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:22px 24px;display:flex;flex-direction:column;position:relative;z-index:20">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+          <span style="font-family:'Archivo',sans-serif;font-weight:800;font-size:15px;color:#fff;letter-spacing:.02em">PROJECTED XI</span>
+          <span style="background:rgba(198,160,74,.16);color:#e4c977;font-size:12px;font-weight:800;padding:4px 11px;border-radius:6px">{{ formation }}</span>
+        </div>
+        <div class="team-pitch" style="position:relative;flex:1;min-height:520px;border-radius:13px;overflow:visible;background:linear-gradient(160deg,#1f7a3f,#175e30);border:1px solid rgba(255,255,255,.1)">
+          <div style="position:absolute;inset:0;border-radius:13px;background:repeating-linear-gradient(0deg,rgba(255,255,255,.05) 0 9%,transparent 9% 18%);pointer-events:none"></div>
+          <svg viewBox="0 0 100 150" preserveAspectRatio="none" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none">
+            <g fill="none" stroke="rgba(255,255,255,.4)" stroke-width="0.5">
+              <rect x="3" y="3" width="94" height="144"/>
+              <line x1="3" y1="75" x2="97" y2="75"/>
+              <circle cx="50" cy="75" r="11"/>
+              <circle cx="50" cy="75" r="0.8" fill="rgba(255,255,255,.5)" stroke="none"/>
+              <rect x="24" y="3" width="52" height="22"/>
+              <rect x="38" y="3" width="24" height="8"/>
+              <rect x="24" y="125" width="52" height="22"/>
+              <rect x="38" y="139" width="24" height="8"/>
+            </g>
+          </svg>
+          <sc-for list="{{ xi }}" as="p" hint-placeholder-count="11">
+            <div onMouseEnter="{{ p.onEnter }}" onMouseLeave="{{ p.onLeave }}" style="{{ p.boxStyle }}">
+              <div style="{{ p.circleStyle }}">{{ p.num }}<span style="{{ p.dotStyle }}"></span></div>
+              <span style="font-size:11px;font-weight:700;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.8);white-space:nowrap">{{ p.last }}</span>
+              <sc-if value="{{ p.active }}" hint-placeholder-val="{{ false }}">
+                <div style="{{ p.panelStyle }}">
+                  <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:9px">
+                    <div style="display:flex;flex-direction:column;line-height:1.18;min-width:0">
+                      <span style="font-family:'Archivo',sans-serif;font-weight:800;font-size:13.5px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">#{{ p.num }} {{ p.name }}</span>
+                      <span style="font-size:10.5px;color:#9a9a9c;font-weight:600">{{ p.roleLabel }}</span>
+                    </div>
+                    <span style="{{ p.tagStyle }}">{{ p.posCode }}</span>
+                  </div>
+                  <textarea value="{{ p.note }}" onChange="{{ p.onNote }}" readOnly="{{ p.noteReadOnly }}" placeholder="{{ p.notePlaceholder }}" style="width:100%;height:88px;resize:none;background:#0d0d0d;border:1px solid rgba(255,255,255,.12);border-radius:9px;padding:9px 10px;color:#e6e6e6;font-size:12.5px;line-height:1.55;outline:none;font-family:'Inter',sans-serif"></textarea>
+                  <div style="display:flex;align-items:center;justify-content:space-between;margin-top:9px">
+                    <span style="font-size:10.5px;font-weight:700;color:{{ p.noteStatusColor }}">{{ p.noteStatus }}</span>
+                    <a href="{{ p.profileHref }}" style="font-size:11.5px;font-weight:700;color:#e4c977;text-decoration:none">Full profile →</a>
+                  </div>
+                </div>
+              </sc-if>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+      <div style="background:#141414;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:22px 24px;display:flex;flex-direction:column">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+          <span style="font-family:'Archivo',sans-serif;font-weight:800;font-size:15px;color:#fff;letter-spacing:.02em">ROSTER</span>
+          <span style="font-size:12px;color:#7a7a7c;font-weight:600">Tap a player for stats →</span>
+        </div>
+        <div style="display:grid;grid-template-columns:24px 1fr 30px 30px 30px;gap:8px;padding:10px 8px 8px;font-size:10px;letter-spacing:.1em;color:#6e6e70;font-weight:800;border-bottom:1px solid rgba(255,255,255,.08)">
+          <span>#</span><span>PLAYER</span><span style="text-align:center">GP</span><span style="text-align:center">G</span><span style="text-align:center">A</span>
+        </div>
+        <div class="team-roster-scroll" style="overflow-y:auto;max-height:520px;margin-top:2px">
+          <sc-for list="{{ roster }}" as="p" hint-placeholder-count="22">
+            <button onClick="{{ p.open }}" style="width:100%;text-align:left;cursor:pointer;background:transparent;border:none;border-bottom:1px solid rgba(255,255,255,.05);display:grid;grid-template-columns:24px 1fr 30px 30px 30px;gap:8px;align-items:center;padding:10px 8px;transition:background .14s ease" style-hover="width:100%;text-align:left;cursor:pointer;background:rgba(198,160,74,.1);border:none;border-bottom:1px solid rgba(255,255,255,.05);display:grid;grid-template-columns:24px 1fr 30px 30px 30px;gap:8px;align-items:center;padding:10px 8px">
+              <span style="font-family:'Archivo',sans-serif;font-weight:800;font-size:13px;color:#e4c977">{{ p.num }}</span>
+              <span style="display:flex;flex-direction:column;line-height:1.2;min-width:0">
+                <span style="font-size:13.5px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ p.name }}</span>
+                <span style="font-size:11px;color:#8a8a8c;font-weight:600">{{ p.posLabel }} · {{ p.year }}</span>
+              </span>
+              <span style="text-align:center;font-size:13px;font-weight:600;color:#cfcfcf">{{ p.gp }}</span>
+              <span style="text-align:center;font-size:13px;font-weight:700;color:#fff">{{ p.g }}</span>
+              <span style="text-align:center;font-size:13px;font-weight:700;color:#fff">{{ p.a }}</span>
+            </button>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+
+    </div><!-- end overview div -->
+
+    <!-- ============ CLIPS TAB ============ -->
+    <div style="{{ clipsStyle }}">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+        <div style="display:flex;align-items:center;gap:12px">
+          <span style="font-family:'Archivo',sans-serif;font-weight:900;font-size:22px;color:#fff">Video Clips</span>
+          <span style="background:rgba(198,160,74,.16);color:#e4c977;font-size:12px;font-weight:700;padding:3px 10px;border-radius:6px">{{ clipsCount }} clips</span>
+        </div>
+        <sc-if value="{{ isCoach }}" hint-placeholder-val="{{ false }}">
+          <button onClick="{{ openClipUpload }}" style="background:linear-gradient(135deg,#c6a04a,#e4c977);color:#161616;border:none;border-radius:9px;padding:10px 18px;font-family:'Archivo',sans-serif;font-weight:800;font-size:13px;cursor:pointer">+ Add clip</button>
+        </sc-if>
+      </div>
+      <!-- empty state -->
+      <div style="{{ noClipsStyle }};border:1px dashed rgba(255,255,255,.16);border-radius:16px;padding:56px 30px;flex-direction:column;align-items:center;gap:12px;text-align:center;background:#101010">
+        <div style="font-size:40px">📹</div>
+        <span style="font-family:'Archivo',sans-serif;font-weight:800;font-size:18px;color:#fff">No clips yet</span>
+        <span style="font-size:13.5px;color:#9a9a9c;font-weight:500;max-width:380px;line-height:1.6">Coaches can upload video clips using the <b style="color:#e4c977">+ Add clip</b> button above.</span>
+      </div>
+      <!-- clips grid -->
+      <div style="{{ hasClipsStyle }}">
+        <sc-for list="{{ clips }}" as="c" hint-placeholder-count="4">
+          <div style="background:#141414;border:1px solid rgba(255,255,255,.08);border-radius:16px;overflow:hidden">
+            <video src="{{ c.url }}" controls="true" style="width:100%;display:block;background:#000;max-height:280px"></video>
+            <div style="padding:14px 16px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
+              <div style="display:flex;flex-direction:column;gap:3px;min-width:0">
+                <span style="font-family:'Archivo',sans-serif;font-weight:800;font-size:15px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.label }}</span>
+                <span style="font-size:11.5px;color:#7a7a7c;font-weight:600">{{ c.dateLabel }}</span>
+              </div>
+              <sc-if value="{{ isCoach }}" hint-placeholder-val="{{ false }}">
+                <button onClick="{{ c.remove }}" style="background:rgba(143,34,34,.18);color:#e07b7b;border:1px solid rgba(143,34,34,.4);border-radius:7px;padding:6px 11px;font-size:12px;font-weight:700;cursor:pointer;flex-shrink:0">Delete</button>
+              </sc-if>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </div><!-- end clips tab -->
+
+  </div><!-- end main content -->
+
+  <!-- ============ CLIP UPLOAD MODAL ============ -->
+  <div style="{{ clipUploadModalStyle }};position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.74);backdrop-filter:blur(6px);align-items:center;justify-content:center;padding:24px">
+    <div style="width:min(480px,96vw);background:#111;border:1px solid rgba(198,160,74,.3);border-radius:18px;overflow:hidden;box-shadow:0 40px 100px rgba(0,0,0,.7)">
+      <div style="padding:20px 24px;border-bottom:1px solid rgba(255,255,255,.08);display:flex;align-items:center;justify-content:space-between">
+        <span style="font-family:'Archivo',sans-serif;font-weight:900;font-size:17px;color:#fff">Add Video Clip</span>
+        <button onClick="{{ closeClipUpload }}" style="background:transparent;border:1px solid rgba(255,255,255,.2);color:#cfcfcf;border-radius:7px;width:30px;height:30px;font-size:17px;cursor:pointer">×</button>
+      </div>
+      <div style="padding:22px 24px;display:flex;flex-direction:column;gap:16px">
+        <div style="display:flex;flex-direction:column;gap:7px">
+          <label style="font-size:11px;letter-spacing:.1em;color:#7a7a7c;font-weight:800">CLIP LABEL</label>
+          <input type="text" value="{{ clipDraft.label }}" onChange="{{ onClipField }}" data-f="label" placeholder="e.g. Corner kick routine vs Luther"
+            style="width:100%;background:#0d0d0d;border:1px solid rgba(255,255,255,.14);border-radius:10px;padding:11px 13px;color:#fff;font-size:14px">
+        </div>
+        <div style="display:flex;flex-direction:column;gap:7px">
+          <label style="font-size:11px;letter-spacing:.1em;color:#7a7a7c;font-weight:800">GAME DATE (optional)</label>
+          <input type="date" value="{{ clipDraft.gameDate }}" onChange="{{ onClipField }}" data-f="gameDate"
+            style="width:100%;background:#0d0d0d;border:1px solid rgba(255,255,255,.14);border-radius:10px;padding:11px 13px;color:#fff;font-size:14px">
+        </div>
+        <div style="display:flex;flex-direction:column;gap:7px">
+          <label style="font-size:11px;letter-spacing:.1em;color:#7a7a7c;font-weight:800">VIDEO FILE</label>
+          <input type="file" accept="video/*" onChange="{{ onClipFile }}"
+            style="width:100%;background:#0d0d0d;border:1px solid rgba(255,255,255,.14);border-radius:10px;padding:11px 13px;color:#cfcfcf;font-size:13px">
+        </div>
+        <div style="{{ clipFlashStyle }}">{{ clipFlash }}</div>
+        <button onClick="{{ uploadClip }}" style="width:100%;background:linear-gradient(135deg,#c6a04a,#e4c977);color:#161616;border:none;border-radius:10px;padding:13px;font-family:'Archivo',sans-serif;font-weight:800;font-size:15px;cursor:pointer">{{ clipBtnLabel }}</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ COACH EDITOR OVERLAY ============ -->
+  <sc-if value="{{ editorOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.72);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:24px">
+      <div style="width:min(1000px,96vw);height:90vh;background:#111;border:1px solid rgba(198,160,74,.3);border-radius:18px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 40px 100px rgba(0,0,0,.7)">
+
+        <!-- editor header -->
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 24px;border-bottom:1px solid rgba(255,255,255,.1);background:linear-gradient(180deg,#181818,#111)">
+          <div style="display:flex;align-items:center;gap:12px">
+            <span style="font-family:'Archivo',sans-serif;font-weight:900;font-size:17px;color:#fff">Manage {{ name }} Data</span>
+            <span style="font-size:11.5px;color:#8a8a8c;font-weight:600">Coach mode</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px">
+            <span style="font-size:12.5px;font-weight:700;color:#5fbf7a">{{ flash }}</span>
+            <button onClick="{{ closeEditor }}" style="background:transparent;border:1px solid rgba(255,255,255,.2);color:#cfcfcf;border-radius:8px;padding:9px 16px;font-weight:700;font-size:13px;cursor:pointer">Cancel</button>
+            <button onClick="{{ saveEditor }}" style="background:linear-gradient(135deg,#c6a04a,#e4c977);color:#161616;border:none;border-radius:8px;padding:9px 20px;font-family:'Archivo',sans-serif;font-weight:800;font-size:13px;cursor:pointer">Save changes</button>
+          </div>
+        </div>
+
+        <div style="flex:1;display:flex;min-height:0">
+          <!-- tab rail -->
+          <div style="width:180px;flex-shrink:0;border-right:1px solid rgba(255,255,255,.1);padding:14px 12px;display:flex;flex-direction:column;gap:4px;background:#0e0e0e">
+            <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="6">
+              <button onClick="{{ t.on }}" style="{{ t.style }}">{{ t.label }}</button>
+            </sc-for>
+          </div>
+
+          <!-- tab content -->
+          <div style="flex:1;overflow-y:auto;padding:22px 26px;min-width:0">
+
+            <!-- ROSTER -->
+            <sc-if value="{{ isRoster }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+                <span style="font-family:'Archivo',sans-serif;font-weight:800;font-size:15px;color:#fff">Roster · {{ rosterCount }} players</span>
+                <button onClick="{{ addPlayer }}" style="background:rgba(198,160,74,.16);color:#e4c977;border:1px solid rgba(198,160,74,.4);border-radius:8px;padding:8px 14px;font-weight:700;font-size:12.5px;cursor:pointer">+ Add player</button>
+              </div>
+              <div style="display:grid;grid-template-columns:46px minmax(120px,1fr) 60px 62px 42px 42px 42px 42px 42px 42px 28px;gap:6px;padding:0 2px 8px;font-size:9.5px;letter-spacing:.06em;color:#6e6e70;font-weight:800">
+                <span>#</span><span>NAME</span><span>POS</span><span>YEAR</span><span style="text-align:center">GP</span><span style="text-align:center">GS</span><span style="text-align:center">G</span><span style="text-align:center">A</span><span style="text-align:center">SH</span><span style="text-align:center">SOG</span><span></span>
+              </div>
+              <sc-for list="{{ editorRoster }}" as="p" hint-placeholder-count="6">
+                <div style="display:grid;grid-template-columns:46px minmax(120px,1fr) 60px 62px 42px 42px 42px 42px 42px 42px 28px;gap:6px;margin-bottom:6px;align-items:center">
+                  <input type="number" value="{{ p.num }}" data-i="{{ p.i }}" data-f="num" onChange="{{ onRosterField }}" style="width:100%;background:#0d0d0d;border:1px solid rgba(255,255,255,.12);border-radius:6px;padding:7px 4px;color:#e4c977;font-weight:700;font-size:12.5px;text-align:center;outline:none">
+                  <input value="{{ p.name }}" data-i="{{ p.i }}" data-f="name" onChange="{{ onRosterField }}" style="width:100%;background:#0d0d0d;border:1px solid rgba(255,255,255,.12);border-radius:6px;padding:7px 9px;color:#fff;font-size:13px;outline:none">
+                  <select value="{{ p.pos }}" data-i="{{ p.i }}" data-f="pos" onChange="{{ onRosterField }}" style="width:100%;background:#0d0d0d;border:1px solid rgba(255,255,255,.12);border-radius:6px;padding:7px 4px;color:#fff;font-size:12.5px;outline:none">
+                    <option value="GK">GK</option><option value="D">D</option><option value="M">M</option><option value="F">F</option>
+                  </select>
+                  <select value="{{ p.year }}" data-i="{{ p.i }}" data-f="year" onChange="{{ onRosterField }}" style="width:100%;background:#0d0d0d;border:1px solid rgba(255,255,255,.12);border-radius:6px;padding:7px 4px;color:#fff;font-size:12.5px;outline:none">
+                    <option value="Fr.">Fr.</option><option value="So.">So.</option><option value="Jr.">Jr.</option><option value="Sr.">Sr.</option><option value="Gr.">Gr.</option>
+                  </select>
+                  <input type="number" value="{{ p.gp }}" data-i="{{ p.i }}" data-f="gp" onChange="{{ onRosterField }}" style="width:100%;background:#0d0d0d;border:1px solid rgba(255,255,255,.12);border-radius:6px;padding:7px 2px;color:#fff;font-size:12.5px;text-align:center;outline:none">
+                  <input type="number" value="{{ p.gs }}" data-i="{{ p.i }}" data-f="gs" onChange="{{ onRosterField }}" style="width:100%;background:#0d0d0d;border:1px solid rgba(255,255,255,.12);border-radius:6px;padding:7px 2px;color:#fff;font-size:12.5px;text-align:center;outline:none">
+                  <input type="number" value="{{ p.g }}" data-i="{{ p.i }}" data-f="g" onChange="{{ onRosterField }}" style="width:100%;background:#0d0d0d;border:1px solid rgba(255,255,255,.12);border-radius:6px;padding:7px 2px;color:#fff;font-size:12.5px;text-align:center;outline:none">
+                  <input type="number" value="{{ p.a }}" data-i="{{ p.i }}" data-f="a" onChange="{{ onRosterField }}" style="width:100%;background:#0d0d0d;border:1px solid rgba(255,255,255,.12);border-radius:6px;padding:7px 2px;color:#fff;font-size:12.5px;text-align:center;outline:none">
+                  <input type="number" value="{{ p.sh }}" data-i="{{ p.i }}" data-f="sh" onChange="{{ onRosterField }}" style="width:100%;background:#0d0d0d;border:1px solid rgba(255,255,255,.12);border-radius:6px;padding:7px 2px;color:#fff;font-size:12.5px;text-align:center;outline:none">
+                  <input type="number" value="{{ p.sog }}" data-i="{{ p.i }}" data-f="sog" onChange="{{ onRosterField }}" style="width:100%;background:#0d0d0d;border:1px solid rgba(255,255,255,.12);border-radius:6px;padding:7px 2px;color:#fff;font-size:12.5px;text-align:center;outline:none">
+                  <button data-i="{{ p.i }}" onClick="{{ onRemovePlayer }}" style="background:transparent;border:none;color:#8f2222;font-size:17px;font-weight:800;cursor:pointer;line-height:1">×</button>
+                </div>
+              </sc-for>
+              <div style="margin-top:20px;padding-top:18px;border-top:1px solid rgba(255,255,255,.08)">
+                <span style="font-weight:700;font-size:13px;color:#fff;display:block;margin-bottom:6px">Import roster from CSV</span>
+                <span style="font-size:11.5px;color:#7a7a7c;display:block;margin-bottom:8px">Columns: num, name, pos (GK/D/M/F), year, GP, GS, G, A, SH, SOG — one player per line. Replaces the current roster.</span>
+                <textarea value="{{ csvRoster }}" onChange="{{ onCsvRoster }}" placeholder="9, Cole Anderson, F, Jr., 12, 11, 8, 3, 28, 14" style="width:100%;height:90px;background:#0d0d0d;border:1px solid rgba(255,255,255,.12);border-radius:9px;padding:11px;color:#e6e6e6;font-size:12.5px;font-family:monospace;outline:none;resize:vertical"></textarea>
+                <button onClick="{{ importRoster }}" style="margin-top:8px;background:rgba(198,160,74,.16);color:#e4c977;border:1px solid rgba(198,160,74,.4);border-radius:8px;padding:8px 14px;font-weight:700;font-size:12.5px;cursor:pointer">Replace roster from CSV</button>
+              </div>
+            </sc-if>
+
+            <!-- RESULTS -->
+            <sc-if value="{{ isResults }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+                <span style="font-family:'Archivo',sans-serif;font-weight:800;font-size:15px;color:#fff">2026 Results · {{ resultsEditCount }} matches</span>
+                <button onClick="{{ addResult }}" style="background:rgba(198,160,74,.16);color:#e4c977;border:1px solid rgba(198,160,74,.4);border-radius:8px;padding:8px 14px;font-weight:700;font-size:12.5px;cursor:pointer">+ Add match</button>
+              </div>
+              <div style="display:grid;grid-template-columns:62px minmax(120px,1fr) 78px 42px 18px 42px 86px 28px;gap:6px;padding:0 2px 8px;font-size:9.5px;letter-spacing:.06em;color:#6e6e70;font-weight:800;align-items:center">
+                <span>H/A</span><span>OPPONENT</span><span>MIAC?</span><span style="text-align:center">GF</span><span></span><span style="text-align:center">GA</span><span>DATE</span><span></span>
+              </div>
+              <sc-for list="{{ editorResults }}" as="r" hint-placeholder-count="6">
+                <div style="display:grid;grid-template-columns:62px minmax(120px,1fr) 78px 42px 18px 42px 86px 28px;gap:6px;margin-bottom:6px;align-items:center">
+                  <select value="{{ r.ha }}" data-i="{{ r.i }}" data-f="home" onChange="{{ onResultField }}" style="width:100%;background:#0d0d0d;border:1px solid rgba(255,255,255,.12);border-radius:6px;padding:7px 4px;color:#fff;font-size:12.5px;outline:none">
+                    <option value="H">Home</option><option value="A">Away</option>
+                  </select>
+                  <input value="{{ r.opp }}" data-i="{{ r.i }}" data-f="opp" onChange="{{ onResultField }}" style="width:100%;background:#0d0d0d;border:1px solid rgba(255,255,255,.12);border-radius:6px;padding:7px 9px;color:#fff;font-size:13px;outline:none">
+                  <select value="{{ r.confVal }}" data-i="{{ r.i }}" data-f="conf" onChange="{{ onResultField }}" style="width:100%;background:#0d0d0d;border:1px solid rgba(255,255,255,.12);border-radius:6px;padding:7px 4px;color:#fff;font-size:12.5px;outline:none">
+                    <option value="Y">MIAC</option><option value="N">Non-conf</option>
+                  </select>
+                  <input type="number" value="{{ r.gf }}" data-i="{{ r.i }}" data-f="gf" onChange="{{ onResultField }}" style="width:100%;background:#0d0d0d;border:1px solid rgba(255,255,255,.12);border-radius:6px;padding:7px 2px;color:#fff;font-size:12.5px;text-align:center;outline:none">
+                  <span style="text-align:center;color:#6e6e70;font-weight:800">–</span>
+                  <input type="number" value="{{ r.ga }}" data-i="{{ r.i }}" data-f="ga" onChange="{{ onResultField }}" style="width:100%;background:#0d0d0d;border:1px solid rgba(255,255,255,.12);border-radius:6px;padding:7px 2px;color:#fff;font-size:12.5px;text-align:center;outline:none">
+                  <input value="{{ r.date }}" data-i="{{ r.i }}" data-f="date" onChange="{{ onResultField }}" placeholder="Sep 12" style="width:100%;background:#0d0d0d;border:1px solid rgba(255,255,255,.12);border-radius:6px;padding:7px 6px;color:#fff;font-size:12px;outline:none">
+                  <button data-i="{{ r.i }}" onClick="{{ onRemoveResult }}" style="background:transparent;border:none;color:#8f2222;font-size:17px;font-weight:800;cursor:pointer;line-height:1">×</button>
+                </div>
+              </sc-for>
+              <div style="margin-top:14px;font-size:11.5px;color:#7a7a7c">Record, form and the last-match card all update automatically from this list. The final row is treated as the most recent match.</div>
+              <div style="margin-top:20px;padding-top:18px;border-top:1px solid rgba(255,255,255,.08)">
+                <span style="font-weight:700;font-size:13px;color:#fff;display:block;margin-bottom:6px">Import results from CSV</span>
+                <span style="font-size:11.5px;color:#7a7a7c;display:block;margin-bottom:8px">Columns: H/A, opponent, MIAC? (Y/N), GF, GA, date. Replaces the current schedule.</span>
+                <textarea value="{{ csvResults }}" onChange="{{ onCsvResults }}" placeholder="H, St. John's, Y, 2, 1, Sep 12" style="width:100%;height:90px;background:#0d0d0d;border:1px solid rgba(255,255,255,.12);border-radius:9px;padding:11px;color:#e6e6e6;font-size:12.5px;font-family:monospace;outline:none;resize:vertical"></textarea>
+                <button onClick="{{ importResults }}" style="margin-top:8px;background:rgba(198,160,74,.16);color:#e4c977;border:1px solid rgba(198,160,74,.4);border-radius:8px;padding:8px 14px;font-weight:700;font-size:12.5px;cursor:pointer">Replace results from CSV</button>
+              </div>
+            </sc-if>
+
+            <!-- MATCH STATS -->
+            <sc-if value="{{ isMatch }}" hint-placeholder-val="{{ false }}">
+              <span style="font-family:'Archivo',sans-serif;font-weight:800;font-size:15px;color:#fff;display:block;margin-bottom:6px">Last-match stat comparison</span>
+              <span style="font-size:12px;color:#7a7a7c;display:block;margin-bottom:18px">Most recent match: <b style="color:#cfcfcf">{{ lastOppLabel }}</b>. These feed the Last Match card.</span>
+              <div style="display:grid;grid-template-columns:1fr 90px 90px;gap:10px;padding:0 2px 8px;font-size:10px;letter-spacing:.08em;color:#6e6e70;font-weight:800">
+                <span>METRIC</span><span style="text-align:center">{{ abbr }}</span><span style="text-align:center">OPP</span>
+              </div>
+              <sc-for list="{{ editorLastStats }}" as="s" hint-placeholder-count="6">
+                <div style="display:grid;grid-template-columns:1fr 90px 90px;gap:10px;margin-bottom:8px;align-items:center">
+                  <input value="{{ s.k }}" data-i="{{ s.i }}" data-f="k" onChange="{{ onLastStatField }}" style="width:100%;background:#0d0d0d;border:1px solid rgba(255,255,255,.12);border-radius:6px;padding:8px 10px;color:#fff;font-size:13px;outline:none">
+                  <input value="{{ s.v }}" data-i="{{ s.i }}" data-f="v" onChange="{{ onLastStatField }}" style="width:100%;background:#0d0d0d;border:1px solid rgba(255,255,255,.12);border-radius:6px;padding:8px 6px;color:#e4c977;font-weight:700;font-size:13px;text-align:center;outline:none">
+                  <input value="{{ s.o }}" data-i="{{ s.i }}" data-f="o" onChange="{{ onLastStatField }}" style="width:100%;background:#0d0d0d;border:1px solid rgba(255,255,255,.12);border-radius:6px;padding:8px 6px;color:#cfcfcf;font-size:13px;text-align:center;outline:none">
+                </div>
+              </sc-for>
+            </sc-if>
+
+            <!-- LINEUP -->
+            <sc-if value="{{ isLineup }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;align-items:center;gap:14px;margin-bottom:18px">
+                <span style="font-family:'Archivo',sans-serif;font-weight:800;font-size:15px;color:#fff">Projected XI</span>
+                <select value="{{ draftFormation }}" onChange="{{ setFormation }}" style="background:#0d0d0d;border:1px solid rgba(198,160,74,.4);border-radius:8px;padding:8px 12px;color:#e4c977;font-weight:700;font-size:13px;outline:none">
+                  <sc-for list="{{ formationOptions }}" as="o" hint-placeholder-count="3"><option value="{{ o }}">{{ o }}</option></sc-for>
+                </select>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 300px;gap:24px;align-items:start">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+                  <sc-for list="{{ editorXi }}" as="x" hint-placeholder-count="11">
+                    <div style="display:flex;align-items:center;gap:8px">
+                      <span style="width:42px;flex-shrink:0;font-size:11px;font-weight:800;color:#e4c977;letter-spacing:.04em">{{ x.code }}</span>
+                      <select value="{{ x.val }}" data-i="{{ x.i }}" onChange="{{ onXiField }}" style="flex:1;min-width:0;background:#0d0d0d;border:1px solid rgba(255,255,255,.12);border-radius:6px;padding:8px 6px;color:#fff;font-size:12.5px;outline:none">
+                        <sc-for list="{{ rosterOptions }}" as="o" hint-placeholder-count="11"><option value="{{ o.num }}">{{ o.label }}</option></sc-for>
+                      </select>
+                    </div>
+                  </sc-for>
+                </div>
+                <div style="position:relative;height:380px;border-radius:11px;overflow:hidden;background:linear-gradient(160deg,#1f7a3f,#175e30);border:1px solid rgba(255,255,255,.1)">
+                  <svg viewBox="0 0 100 150" preserveAspectRatio="none" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none">
+                    <g fill="none" stroke="rgba(255,255,255,.4)" stroke-width="0.5">
+                      <rect x="3" y="3" width="94" height="144"/><line x1="3" y1="75" x2="97" y2="75"/><circle cx="50" cy="75" r="11"/>
+                      <rect x="24" y="3" width="52" height="22"/><rect x="24" y="125" width="52" height="22"/>
+                    </g>
+                  </svg>
+                  <sc-for list="{{ previewXi }}" as="p" hint-placeholder-count="11">
+                    <div style="{{ p.boxStyle }}">
+                      <div style="{{ p.circleStyle }}">{{ p.num }}</div>
+                      <span style="font-size:9px;font-weight:700;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.8);white-space:nowrap">{{ p.last }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-if>
+
+            <!-- REVIEW -->
+            <sc-if value="{{ isReview }}" hint-placeholder-val="{{ false }}">
+              <span style="font-family:'Archivo',sans-serif;font-weight:800;font-size:15px;color:#fff;display:block;margin-bottom:6px">Tactical review</span>
+              <span style="font-size:12px;color:#7a7a7c;display:block;margin-bottom:14px">Players see this on the team page. Markdown not required — plain text.</span>
+              <textarea value="{{ draftTactical }}" onChange="{{ setDraftTactical }}" style="width:100%;height:420px;background:#0d0d0d;border:1px solid rgba(255,255,255,.12);border-radius:11px;padding:16px;color:#e6e6e6;font-size:14.5px;line-height:1.7;outline:none;resize:vertical"></textarea>
+            </sc-if>
+
+            <!-- BACKUP -->
+            <sc-if value="{{ isBackup }}" hint-placeholder-val="{{ false }}">
+              <span style="font-family:'Archivo',sans-serif;font-weight:800;font-size:15px;color:#fff;display:block;margin-bottom:14px">Export &amp; backup</span>
+              <div style="display:flex;gap:10px;margin-bottom:10px">
+                <button onClick="{{ exportNow }}" style="background:rgba(198,160,74,.16);color:#e4c977;border:1px solid rgba(198,160,74,.4);border-radius:8px;padding:9px 15px;font-weight:700;font-size:12.5px;cursor:pointer">Generate export</button>
+                <button onClick="{{ downloadJSON }}" style="background:rgba(198,160,74,.16);color:#e4c977;border:1px solid rgba(198,160,74,.4);border-radius:8px;padding:9px 15px;font-weight:700;font-size:12.5px;cursor:pointer">Download .json</button>
+                <button onClick="{{ copyExport }}" style="background:transparent;color:#cfcfcf;border:1px solid rgba(255,255,255,.2);border-radius:8px;padding:9px 15px;font-weight:700;font-size:12.5px;cursor:pointer">Copy</button>
+              </div>
+              <textarea value="{{ exportText }}" readOnly="{{ true }}" placeholder="Click Generate export to dump this team's data as JSON…" style="width:100%;height:150px;background:#0d0d0d;border:1px solid rgba(255,255,255,.12);border-radius:9px;padding:12px;color:#9bd6a8;font-size:11.5px;font-family:monospace;outline:none;resize:vertical"></textarea>
+
+              <span style="font-family:'Archivo',sans-serif;font-weight:800;font-size:15px;color:#fff;display:block;margin:24px 0 8px">Import JSON</span>
+              <textarea value="{{ importJSON }}" onChange="{{ onImportJSON }}" placeholder="Paste a previously exported team JSON to load it into the editor…" style="width:100%;height:120px;background:#0d0d0d;border:1px solid rgba(255,255,255,.12);border-radius:9px;padding:12px;color:#e6e6e6;font-size:11.5px;font-family:monospace;outline:none;resize:vertical"></textarea>
+              <button onClick="{{ loadJSON }}" style="margin-top:8px;background:rgba(198,160,74,.16);color:#e4c977;border:1px solid rgba(198,160,74,.4);border-radius:8px;padding:8px 14px;font-weight:700;font-size:12.5px;cursor:pointer">Load into editor</button>
+
+              <div style="margin-top:28px;padding-top:18px;border-top:1px solid rgba(143,34,34,.4)">
+                <span style="font-weight:800;font-size:13px;color:#e07b7b;display:block;margin-bottom:6px">Reset</span>
+                <span style="font-size:11.5px;color:#7a7a7c;display:block;margin-bottom:10px">Discard this team's saved data and restore the generated sample. Cannot be undone.</span>
+                <button onClick="{{ resetSample }}" style="background:rgba(143,34,34,.18);color:#e07b7b;border:1px solid rgba(143,34,34,.5);border-radius:8px;padding:9px 15px;font-weight:700;font-size:12.5px;cursor:pointer">Reset to sample data</button>
+              </div>
+            </sc-if>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+  <!-- ============ SAVE REPORT MODAL ============ -->
+  <sc-if value="{{ saveOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.72);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:24px">
+      <div style="width:min(520px,96vw);background:#111;border:1px solid rgba(198,160,74,.3);border-radius:18px;overflow:hidden;box-shadow:0 40px 100px rgba(0,0,0,.7)">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 24px;border-bottom:1px solid rgba(255,255,255,.1);background:linear-gradient(180deg,#181818,#111)">
+          <div style="display:flex;flex-direction:column;gap:2px">
+            <span style="font-family:'Archivo',sans-serif;font-weight:900;font-size:17px;color:#fff">Save scouting report</span>
+            <span style="font-size:11.5px;color:#8a8a8c;font-weight:600">{{ name }} · snapshots the current tactical review</span>
+          </div>
+          <button onClick="{{ closeSaveReport }}" style="background:transparent;border:none;color:#8a8a8c;font-size:22px;font-weight:700;cursor:pointer;line-height:1">×</button>
+        </div>
+        <div style="padding:22px 24px;display:flex;flex-direction:column;gap:18px">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+            <div style="display:flex;flex-direction:column;gap:7px">
+              <span style="font-size:11px;letter-spacing:.1em;color:#7a7a7c;font-weight:800">MATCH DATE</span>
+              <input type="date" value="{{ rep.date }}" data-f="date" onChange="{{ onRepField }}" style="width:100%;background:#0d0d0d;border:1px solid rgba(255,255,255,.12);border-radius:9px;padding:10px 12px;color:#fff;font-size:13.5px;outline:none">
+            </div>
+            <div style="display:flex;flex-direction:column;gap:7px">
+              <span style="font-size:11px;letter-spacing:.1em;color:#7a7a7c;font-weight:800">RESULT</span>
+              <select value="{{ rep.resultType }}" data-f="resultType" onChange="{{ onRepField }}" style="width:100%;background:#0d0d0d;border:1px solid rgba(255,255,255,.12);border-radius:9px;padding:10px 12px;color:#fff;font-size:13.5px;outline:none">
+                <option value="UP">Upcoming</option>
+                <option value="W">Win</option>
+                <option value="L">Loss</option>
+                <option value="D">Draw</option>
+              </select>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:7px">
+            <span style="font-size:11px;letter-spacing:.1em;color:#7a7a7c;font-weight:800">SCORE <span style="color:#5a5a5c;font-weight:600;letter-spacing:0">(optional)</span></span>
+            <input value="{{ rep.score }}" data-f="score" onChange="{{ onRepField }}" placeholder="e.g. 2–1" style="width:100%;background:#0d0d0d;border:1px solid rgba(255,255,255,.12);border-radius:9px;padding:10px 12px;color:#fff;font-size:13.5px;outline:none">
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;background:#0e0e0e;border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:11px 13px">
+            <span style="font-size:11px;color:#7a7a7c;font-weight:600;line-height:1.5">This saves a card to the <b style="color:#e4c977">Reports</b> tab showing <b style="color:#cfcfcf">{{ name }}</b>, the date and result — opening the snapshot of this report.</span>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:flex-end;gap:10px;padding:16px 24px;border-top:1px solid rgba(255,255,255,.1);background:#0e0e0e">
+          <a href="Reports.dc.html" style="margin-right:auto;font-size:12.5px;font-weight:700;color:#9a9a9c;text-decoration:none">View Reports →</a>
+          <button onClick="{{ closeSaveReport }}" style="background:transparent;border:1px solid rgba(255,255,255,.2);color:#cfcfcf;border-radius:8px;padding:9px 16px;font-weight:700;font-size:13px;cursor:pointer">Cancel</button>
+          <button onClick="{{ confirmSaveReport }}" style="background:linear-gradient(135deg,#c6a04a,#e4c977);color:#161616;border:none;border-radius:8px;padding:9px 22px;font-family:'Archivo',sans-serif;font-weight:800;font-size:13px;cursor:pointer">Save to Reports</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { team: null, model: null, abbr: 'OLE', custom: false, saved: false,
+    users: [], meId: null, userMenuOpen: false,
+    saveOpen: false, repDraft: null,
+    editorOpen: false, tab: 'roster', draft: null, flash: '', exportText: '', csvRoster: '', csvResults: '', importJSON: '', hoverXi: null,
+    pageTab: 'overview', clips: [], clipUploadOpen: false, clipDraft: { label: '', gameDate: '' }, clipFile: null, clipUploading: false, clipFlash: '' };
+
+  clone(o) { return JSON.parse(JSON.stringify(o)); }
+  flashMsg(m) { this.setState({ flash: m }); clearTimeout(this._ft); this._ft = setTimeout(() => this.setState({ flash: '' }), 2200); }
+
+  async componentDidMount() {
+    const params = new URLSearchParams(location.search);
+    const abbr = (params.get('team') || 'OLE').toUpperCase();
+    let mod;
+    try { mod = await import('./data.js?v=12'); } catch (e) { console.error('data load failed', e); return; }
+    this.mod = mod;
+    try { this.auth = await import('./auth.js?v=2'); } catch (e) { console.error('auth load failed', e); }
+    const a = this.auth;
+    const session = await this.auth.getSession();
+    if (!session) { location.href = 'Login.dc.html'; return; }
+    const realAbbr = mod.teamExists(abbr) ? abbr : 'OLE';
+    const [model, custom, users, meId, me] = await Promise.all([
+      mod.getModel(realAbbr),
+      mod.isCustom(realAbbr),
+      a ? a.getUsers() : Promise.resolve([]),
+      a ? a.getCurrentUserId() : Promise.resolve(null),
+      a ? a.getCurrentUser() : Promise.resolve({ name: 'Guest', role: 'player', email: '' }),
+    ]);
+    const team = mod.buildTeam(realAbbr, model);
+    this.setState({ abbr: realAbbr, model, team, custom, users, meId, me });
+    document.title = team.name + ' · MIAC Scouting';
+    try { const clips = await mod.getClips(realAbbr); this.setState({ clips }); } catch (e) { console.warn('clips load failed', e); }
+  }
+
+  toggleUserMenu = () => this.setState(s => ({ userMenuOpen: !s.userMenuOpen }));
+  closeUserMenu = () => this.setState({ userMenuOpen: false });
+  signOut = async () => { await this.auth.signOut(); location.href = 'Login.dc.html'; };
+
+  authVals() {
+    const A = this.auth;
+    const me = this.state.me;
+    const blank = { initials: '·', name: 'Loading…', roleLabel: '', roleFg: '#8a8a8c', avatarStyle: 'display:flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.1);color:#888;font-family:Archivo,sans-serif;font-weight:800;font-size:12px' };
+    if (!A || !me) return { canEdit: false, me: blank, switcher: [], userMenuOpen: false, toggleUserMenu: this.toggleUserMenu, closeUserMenu: this.closeUserMenu, adminLinkStyle: 'display:none' };
+    const avatar = (role, sz) => { const c = A.roleColor(role); return `display:flex;align-items:center;justify-content:center;width:${sz}px;height:${sz}px;border-radius:50%;background:${c.bg};color:${c.fg};font-family:Archivo,sans-serif;font-weight:800;font-size:${sz>32?12:11}px;flex-shrink:0`; };
+    const mc = A.roleColor(me.role);
+    return {
+      canEdit: me.role === 'coach' || me.role === 'admin',
+      me: { initials: A.initials(me.name), name: me.name, roleLabel: A.ROLE_LABEL[me.role], roleFg: mc.fg, avatarStyle: avatar(me.role, 34) },
+      userMenuOpen: this.state.userMenuOpen, toggleUserMenu: this.toggleUserMenu, closeUserMenu: this.closeUserMenu,
+      switcher: this.state.users.map(u => {
+        const c = A.roleColor(u.role); const cur = u.id === this.state.meId;
+        return {
+          initials: A.initials(u.name), name: u.name, roleLabel: A.ROLE_LABEL[u.role], roleFg: c.fg, avatarStyle: avatar(u.role, 32),
+          rowStyle: `display:flex;align-items:center;gap:11px;width:100%;text-align:left;cursor:pointer;border:none;border-radius:9px;padding:9px 10px;background:${cur ? 'rgba(198,160,74,.12)' : 'transparent'}`,
+          checkStyle: cur ? 'color:#e4c977;font-size:13px;font-weight:800' : 'color:transparent;font-size:13px',
+          onSwitch: () => this.switchUser(u.id),
+        };
+      }),
+      adminLinkStyle: (me.role === 'admin')
+        ? 'display:flex;align-items:center;gap:8px;margin-top:6px;padding:11px 10px;border-top:1px solid rgba(255,255,255,.1);color:#e4c977;font-size:13px;font-weight:700;text-decoration:none;cursor:pointer'
+        : 'display:none',
+    };
+  }
+
+  persistModel(model) {
+    this.mod.saveOverride(this.state.abbr, model); // async fire-and-forget; UI updates immediately
+    const team = this.mod.buildTeam(this.state.abbr, model);
+    this.setState({ model, team, custom: true });
+    return team;
+  }
+
+  onTactical = (e) => {
+    const v = e.target.value;
+    const model = { ...this.state.model, tactical: v };
+    this.persistModel(model);
+    this.setState({ saved: true });
+  };
+
+  // ---- per-player scouting notes (XI hover) ----
+  enterXi = (num) => { clearTimeout(this._hx); this.setState({ hoverXi: num }); };
+  leaveXi = () => { clearTimeout(this._hx); this._hx = setTimeout(() => this.setState({ hoverXi: null }), 220); };
+  onNoteChange = (num, v) => {
+    const notes = { ...(this.state.model.notes || {}) };
+    notes[num] = v;
+    this.persistModel({ ...this.state.model, notes });
+    this.setState({ saved: true });
+  };
+
+  // ---- clips ----
+  setPageTab = (t) => this.setState({ pageTab: t });
+  openClipUpload = () => this.setState({ clipUploadOpen: true, clipDraft: { label: '', gameDate: '' }, clipFile: null, clipFlash: '' });
+  closeClipUpload = () => this.setState({ clipUploadOpen: false });
+  onClipField = (e) => { const f = e.target.dataset.f; const v = e.target.value; this.setState(s => ({ clipDraft: { ...s.clipDraft, [f]: v } })); };
+  onClipFile = (e) => { this.setState({ clipFile: e.target.files[0] || null }); };
+  uploadClip = async () => {
+    const { clipDraft, clipFile, clipUploading } = this.state;
+    if (clipUploading) return;
+    if (!clipDraft.label.trim()) { this.setState({ clipFlash: 'Enter a label for this clip.' }); return; }
+    if (!clipFile) { this.setState({ clipFlash: 'Select a video file.' }); return; }
+    this.setState({ clipUploading: true, clipFlash: '' });
+    try {
+      const clips = await this.mod.addClip({ abbr: this.state.abbr, label: clipDraft.label.trim(), gameDate: clipDraft.gameDate, file: clipFile });
+      this.setState({ clips, clipUploadOpen: false, clipUploading: false });
+    } catch (e) {
+      this.setState({ clipUploading: false, clipFlash: e.message || 'Upload failed.' });
+    }
+  };
+  deleteClip = async (id, filePath) => {
+    try {
+      await this.mod.removeClip(id, filePath);
+      const clips = await this.mod.getClips(this.state.abbr);
+      this.setState({ clips });
+    } catch (e) { console.error('deleteClip', e); }
+  };
+
+  // ---- editor lifecycle ----
+  openSaveReport = async () => {
+    const me = this.state.me;
+    if (!(me && (me.role === 'coach' || me.role === 'admin')) || !this.state.team) return;
+    const t = this.state.team; let date = '';
+    try { const sch = await this.mod.getSchedule(); const g = sch.find(x => x.opp === t.abbr); if (g) date = g.date; } catch (e) {}
+    if (!date) { const d = new Date(); date = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; }
+    this.setState({ saveOpen: true, repDraft: { date, resultType: 'UP', score: '' } });
+  };
+  closeSaveReport = () => this.setState({ saveOpen: false });
+  onRepField = (e) => { const f = e.target.dataset.f; const v = e.target.value; this.setState(s => ({ repDraft: { ...s.repDraft, [f]: v } })); };
+  confirmSaveReport = async () => {
+    const t = this.state.team; if (!t) return; const dr = this.state.repDraft || {};
+    const rep = { abbr: t.abbr, team: t.name, mascot: t.mascot, crest: t.crest, ink: t.ink, primary: t.primary,
+      date: dr.date || '', resultType: dr.resultType || 'UP', score: (dr.score || '').trim(),
+      tactical: t.tactical || '', formation: t.formation, record: t.record, isConf: t.isConf, leagueLabel: t.leagueLabel,
+      xi: (t.xi || []).map(p => ({ x: p.x, y: p.y, num: p.num, last: p.last, code: p.code, empty: p.empty })) };
+    await this.mod.addReport(rep);
+    this.setState({ saveOpen: false });
+    this.flashMsg('Saved to Reports');
+  };
+
+  // ---- editor lifecycle ----
+  openEditor = () => { const me = this.state.me; if (!(me && (me.role === 'coach' || me.role === 'admin'))) return; this.setState({ editorOpen: true, tab: 'roster', draft: this.clone(this.state.model), flash: '', exportText: '', csvRoster: '', csvResults: '', importJSON: '' }); };
+  closeEditor = () => this.setState({ editorOpen: false });
+  setTab(t) { this.setState({ tab: t }); }
+  mutate(fn) { const d = this.clone(this.state.draft); fn(d); this.setState({ draft: d }); }
+  saveEditor = () => {
+    const d = this.state.draft;
+    this.persistModel(this.clone(d));
+    this.setState({ editorOpen: false });
+    this.flashMsg('Saved');
+  };
+
+  // ---- roster ----
+  onRosterField = (e) => {
+    const { i, f } = e.target.dataset; const num = ['num','gp','gs','g','a','sh','sog'].includes(f);
+    this.mutate(d => { d.roster[+i][f] = num ? (e.target.value === '' ? 0 : Number(e.target.value)) : e.target.value; });
+  };
+  addPlayer = () => this.mutate(d => { const used = new Set(d.roster.map(p => p.num)); let n = 1; while (used.has(n)) n++; d.roster.push({ num: n, name: 'New Player', pos: 'M', year: 'Fr.', gp: 0, gs: 0, g: 0, a: 0, sh: 0, sog: 0 }); });
+  onRemovePlayer = (e) => { const i = +e.currentTarget.dataset.i; this.mutate(d => d.roster.splice(i, 1)); };
+  onCsvRoster = (e) => this.setState({ csvRoster: e.target.value });
+  importRoster = () => { const rows = this.mod.parseRosterCSV(this.state.csvRoster || ''); if (rows.length) { this.mutate(d => { d.roster = rows; }); this.flashMsg('Imported ' + rows.length + ' players'); } else this.flashMsg('No rows parsed'); };
+
+  // ---- results ----
+  onResultField = (e) => {
+    const { i, f } = e.target.dataset; const v = e.target.value;
+    this.mutate(d => {
+      if (f === 'home') d.results[+i].home = v === 'H';
+      else if (f === 'conf') d.results[+i].conf = v === 'Y';
+      else if (f === 'gf' || f === 'ga') d.results[+i][f] = v === '' ? 0 : Number(v);
+      else d.results[+i][f] = v;
+    });
+  };
+  addResult = () => this.mutate(d => d.results.push({ home: true, opp: 'Opponent', abbr: null, conf: true, gf: 0, ga: 0, date: '' }));
+  onRemoveResult = (e) => { const i = +e.currentTarget.dataset.i; this.mutate(d => d.results.splice(i, 1)); };
+  onCsvResults = (e) => this.setState({ csvResults: e.target.value });
+  importResults = () => { const rows = this.mod.parseResultsCSV(this.state.csvResults || ''); if (rows.length) { this.mutate(d => { d.results = rows; }); this.flashMsg('Imported ' + rows.length + ' matches'); } else this.flashMsg('No rows parsed'); };
+
+  // ---- match stats ----
+  onLastStatField = (e) => { const { i, f } = e.target.dataset; this.mutate(d => { d.lastStats[+i][f] = e.target.value; }); };
+
+  // ---- lineup ----
+  setFormation = (e) => { const v = e.target.value; this.mutate(d => { d.formation = v; }); };
+  onXiField = (e) => { const i = +e.target.dataset.i; const v = Number(e.target.value); this.mutate(d => { const xi = (d.xi || []).slice().map(Number); while (xi.length < 11) xi.push(0); if (v) { for (let j = 0; j < xi.length; j++) { if (j !== i && Number(xi[j]) === v) xi[j] = 0; } } xi[i] = v; d.xi = xi; }); };
+
+  // ---- review ----
+  setDraftTactical = (e) => { const v = e.target.value; this.mutate(d => { d.tactical = v; }); };
+
+  // ---- backup ----
+  exportNow = () => this.setState({ exportText: JSON.stringify(this.state.draft, null, 2) });
+  copyExport = () => { try { navigator.clipboard.writeText(this.state.exportText || JSON.stringify(this.state.draft, null, 2)); this.flashMsg('Copied'); } catch (e) { this.flashMsg('Copy blocked'); } };
+  downloadJSON = () => { try { const blob = new Blob([JSON.stringify(this.state.draft, null, 2)], { type: 'application/json' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = this.state.abbr + '-scouting.json'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url); } catch (e) {} };
+  onImportJSON = (e) => this.setState({ importJSON: e.target.value });
+  loadJSON = () => { try { const m = JSON.parse(this.state.importJSON); this.mutate(d => { Object.assign(d, m); }); this.flashMsg('Loaded into editor'); } catch (e) { this.flashMsg('Invalid JSON'); } };
+  resetSample = async () => { await this.mod.clearOverride(this.state.abbr); const model = this.mod.genModel(this.state.abbr); const team = this.mod.buildTeam(this.state.abbr, model); this.setState({ model, team, draft: this.clone(model), custom: false }); this.flashMsg('Reset to sample'); };
+
+  renderVals() {
+    const pill = (active) => active
+      ? 'border:none;border-radius:999px;padding:7px 15px;font-family:Archivo,sans-serif;font-weight:800;font-size:12px;letter-spacing:.04em;cursor:pointer;background:linear-gradient(135deg,#c6a04a,#e4c977);color:#161616'
+      : 'border:none;border-radius:999px;padding:7px 15px;font-family:Archivo,sans-serif;font-weight:700;font-size:12px;letter-spacing:.04em;cursor:pointer;background:transparent;color:#9a9a9c';
+    const A = this.authVals();
+    const isCoach = !!A.canEdit;
+    const t = this.state.team;
+    const base = {
+      ...A,
+      isCoach,
+      openEditor: this.openEditor, closeEditor: this.closeEditor, saveEditor: this.saveEditor,
+      openSaveReport: this.openSaveReport, closeSaveReport: this.closeSaveReport, onRepField: this.onRepField, confirmSaveReport: this.confirmSaveReport,
+      saveOpen: this.state.saveOpen,
+      rep: this.state.repDraft ? { date: this.state.repDraft.date || '', resultType: this.state.repDraft.resultType || 'UP', score: this.state.repDraft.score || '' } : { date: '', resultType: 'UP', score: '' },
+      onTactical: this.onTactical, readOnly: !isCoach, tactical: this.state.team ? this.state.team.tactical : '',
+      saveLabel: isCoach ? (this.state.saved ? '● Auto-saved' : '● Editing enabled') : '🔒 View only',
+      saveColor: isCoach ? '#5fbf7a' : '#8a8a8c',
+      editorHint: isCoach ? 'Quick-edit here, or use Manage Data for the full editor. Changes auto-save.' : 'Read-only — sign in as a coach or admin to edit the scouting review.',
+      editorOpen: this.state.editorOpen, flash: this.state.flash,
+      customBadge: this.state.custom ? 'COACH DATA' : '',
+      customBadgeStyle: this.state.custom ? 'background:rgba(95,191,122,.18);color:#5fbf7a;font-size:11px;font-weight:800;padding:4px 9px;border-radius:6px;letter-spacing:.04em' : 'display:none',
+    };
+    if (!t) return base;
+
+    const RC = { W: { bg: '#1c7a45', fg: '#9bf3bf' }, D: { bg: '#44454a', fg: '#dadadc' }, L: { bg: '#8f2222', fg: '#ffc9c9' } };
+    const sq = (res, size) => `display:flex;align-items:center;justify-content:center;width:${size}px;height:${size}px;border-radius:8px;font-family:Archivo,sans-serif;font-weight:800;font-size:${size > 32 ? 17 : 13}px;background:${RC[res].bg};color:${RC[res].fg};flex-shrink:0`;
+    const lm = t.lastMatch;
+    const circleBg = t.primary === '#1a1a1a' ? '#262626' : t.primary;
+    const notesMap = (this.state.model && this.state.model.notes) || {};
+    const XILABEL = { GK:'Goalkeeper', LB:'Left back', RB:'Right back', CB:'Centre back', LWB:'Left wing-back', RWB:'Right wing-back', CM:'Centre mid', DM:'Defensive mid', AM:'Attacking mid', LM:'Left mid', RM:'Right mid', LW:'Left wing', RW:'Right wing', SS:'Second striker', ST:'Striker' };
+    const buildXi = (p) => {
+      const below = p.y < 44;
+      // Empty slot — grey "Select +" placeholder
+      if (p.empty) {
+        return {
+          num: '+', last: 'Select', name: '', posCode: p.code, roleLabel: XILABEL[p.code] || 'Player',
+          boxStyle: `position:absolute;left:${p.x}%;top:${p.y}%;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:4px;z-index:2;cursor:${isCoach ? 'pointer' : 'default'}`,
+          circleStyle: 'position:relative;width:42px;height:42px;border-radius:50%;background:rgba(255,255,255,.06);border:2px dashed rgba(255,255,255,.25);color:rgba(255,255,255,.4);display:flex;align-items:center;justify-content:center;font-family:Archivo,sans-serif;font-weight:800;font-size:18px',
+          dotStyle: 'display:none',
+          onEnter: () => {}, onLeave: () => {}, active: false,
+          note: '', noteReadOnly: true, onNote: () => {},
+          notePlaceholder: '', noteStatus: '', noteStatusColor: '#8a8a8c',
+          profileHref: '#',
+          tagStyle: 'display:none',
+          panelStyle: 'display:none',
+        };
+      }
+      const active = this.state.hoverXi === p.num;
+      const note = notesMap[p.num] || '';
+      const hasNote = !!String(note).trim();
+      return {
+        num: p.num, last: p.last, name: p.name || ('#' + p.num), posCode: p.code, roleLabel: XILABEL[p.code] || 'Player',
+        boxStyle: `position:absolute;left:${p.x}%;top:${p.y}%;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:4px;z-index:${active ? 60 : 2};cursor:pointer`,
+        circleStyle: `position:relative;width:42px;height:42px;border-radius:50%;background:${circleBg};border:2px solid ${active ? '#e4c977' : t.ink};color:${active ? '#e4c977' : t.ink};display:flex;align-items:center;justify-content:center;font-family:Archivo,sans-serif;font-weight:800;font-size:15px;box-shadow:${active ? '0 0 0 4px rgba(198,160,74,.3),0 6px 16px rgba(0,0,0,.6)' : '0 4px 12px rgba(0,0,0,.55)'};transition:box-shadow .15s ease,border-color .15s ease`,
+        dotStyle: hasNote ? 'position:absolute;top:-3px;right:-3px;width:12px;height:12px;border-radius:50%;background:#e4c977;border:2px solid #15692f' : 'display:none',
+        onEnter: () => this.enterXi(p.num), onLeave: () => this.leaveXi(), active,
+        note, noteReadOnly: !isCoach, onNote: (e) => this.onNoteChange(p.num, e.target.value),
+        notePlaceholder: isCoach ? ('Quick scouting note on ' + (p.name || 'this player') + '…') : 'No scouting notes yet.',
+        noteStatus: isCoach ? '● Notes auto-save' : '🔒 View only', noteStatusColor: isCoach ? '#5fbf7a' : '#8a8a8c',
+        profileHref: `Player.dc.html?team=${t.abbr}&id=${p.num}`,
+        tagStyle: 'background:rgba(198,160,74,.16);color:#e4c977;font-size:10px;font-weight:800;padding:3px 7px;border-radius:5px;letter-spacing:.04em;flex-shrink:0',
+        panelStyle: `position:absolute;left:50%;transform:translateX(-50%);${below ? 'top:calc(100% + 12px)' : 'bottom:calc(100% + 12px)'};width:248px;background:#181818;border:1px solid rgba(198,160,74,.4);border-radius:12px;box-shadow:0 18px 44px rgba(0,0,0,.65);padding:13px 14px;z-index:70;cursor:default;text-align:left`,
+      };
+    };
+    const mkXi = (arr, fz) => arr.map(p => ({
+      num: p.num, last: p.last,
+      boxStyle: `position:absolute;left:${p.x}%;top:${p.y}%;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:4px;z-index:2`,
+      circleStyle: `width:${fz}px;height:${fz}px;border-radius:50%;background:${circleBg};border:2px solid ${t.ink};color:${t.ink};display:flex;align-items:center;justify-content:center;font-family:Archivo,sans-serif;font-weight:800;font-size:${fz > 36 ? 15 : 12}px;box-shadow:0 4px 12px rgba(0,0,0,.55)`,
+    }));
+
+    const display = {
+      ...base,
+      crest: t.crest, ink: t.ink, abbr: t.abbr, name: t.name, mascot: t.mascot,
+      record: t.record, confRecord: t.confRecord, rankLabel: t.rankLabel, formation: t.formation,
+      leagueBadge: t.isConf ? ('MIAC ' + t.rankLabel) : t.leagueLabel,
+      confName: t.isConf ? 'MIAC' : t.leagueLabel,
+      lmRes: lm.res, lmScore: lm.score, lmOpp: lm.name, lmMeta: (lm.home ? 'Home' : 'Away') + ' · ' + lm.date,
+      lmBadgeStyle: sq(lm.res, 46), lmStats: lm.stats,
+      form: t.form.map(f => ({ l: f, style: sq(f, 38) })),
+      seasonLabel: t.season || new Date().getFullYear(),
+      resultCount: t.results.length,
+      results: t.results.map(r => ({ res: r.res, score: r.score, date: r.date, opp: r.name, haText: r.home ? 'vs' : '@', confText: r.conf ? ' · MIAC' : ' · Non-conf', badgeStyle: sq(r.res, 30) })),
+      xi: t.xi.map(buildXi),
+      roster: t.roster.map(p => ({ num: p.num, name: p.name, posLabel: p.posLabel, year: p.year, gp: p.gp, g: p.g, a: p.a, open: () => { location.href = `Player.dc.html?team=${t.abbr}&id=${p.num}`; } })),
+      // clips tab
+      overviewStyle: this.state.pageTab === 'overview' ? 'display:block' : 'display:none',
+      clipsStyle: this.state.pageTab === 'clips' ? 'display:block' : 'display:none',
+      setOverview: () => this.setPageTab('overview'), setClips: () => this.setPageTab('clips'),
+      pageTabStyleOverview: `cursor:pointer;border:none;padding:10px 22px;font-family:Archivo,sans-serif;font-weight:800;font-size:13px;border-radius:9px;${this.state.pageTab==='overview'?'background:linear-gradient(135deg,#c6a04a,#e4c977);color:#161616':'background:rgba(255,255,255,.06);color:#cfcfcf;border:1px solid rgba(255,255,255,.1)'}`,
+      pageTabStyleClips: `cursor:pointer;border:none;padding:10px 22px;font-family:Archivo,sans-serif;font-weight:800;font-size:13px;border-radius:9px;${this.state.pageTab==='clips'?'background:linear-gradient(135deg,#c6a04a,#e4c977);color:#161616':'background:rgba(255,255,255,.06);color:#cfcfcf;border:1px solid rgba(255,255,255,.1)'}`,
+      clipsCount: this.state.clips.length,
+      clips: this.state.clips.map(c => ({ ...c, dateLabel: c.game_date || '', remove: () => this.deleteClip(c.id, c.file_path) })),
+      hasClipsStyle: this.state.clips.length > 0 ? 'display:grid;grid-template-columns:repeat(2,1fr);gap:18px' : 'display:none',
+      noClipsStyle: this.state.clips.length === 0 ? 'display:flex' : 'display:none',
+      clipUploadOpen: this.state.clipUploadOpen,
+      openClipUpload: this.openClipUpload, closeClipUpload: this.closeClipUpload,
+      onClipField: this.onClipField, onClipFile: this.onClipFile, uploadClip: this.uploadClip,
+      clipDraft: this.state.clipDraft,
+      clipFlashStyle: this.state.clipFlash ? 'display:block;background:rgba(143,34,34,.18);border:1px solid rgba(143,34,34,.4);border-radius:9px;padding:10px 14px;font-size:13px;color:#e07b7b;font-weight:600' : 'display:none',
+      clipFlash: this.state.clipFlash,
+      clipBtnLabel: this.state.clipUploading ? 'Uploading…' : 'Upload clip',
+      clipUploadModalStyle: this.state.clipUploadOpen ? 'display:flex' : 'display:none',
+    };
+
+    // editor values
+    const d = this.state.draft;
+    if (!this.state.editorOpen || !d) return display;
+    const tab = this.state.tab;
+    const tabStyle = (a) => `display:block;width:100%;text-align:left;cursor:pointer;border:none;background:${a ? 'rgba(198,160,74,.16)' : 'transparent'};color:${a ? '#e4c977' : '#cfcfcf'};font-family:Inter,sans-serif;font-weight:${a ? 700 : 600};font-size:13.5px;padding:11px 13px;border-radius:9px;border-left:3px solid ${a ? '#e4c977' : 'transparent'}`;
+    const T = (id, label) => ({ label, on: () => this.setTab(id), style: tabStyle(tab === id) });
+    const lastR = d.results[d.results.length - 1];
+    const previewTeam = this.mod.buildTeam(this.state.abbr, d);
+
+    return {
+      ...display,
+      tabs: [T('roster', 'Roster'), T('results', 'Results'), T('match', 'Match stats'), T('lineup', 'Lineup'), T('review', 'Tactical review'), T('backup', 'Import / Backup')],
+      isRoster: tab === 'roster', isResults: tab === 'results', isMatch: tab === 'match', isLineup: tab === 'lineup', isReview: tab === 'review', isBackup: tab === 'backup',
+      rosterCount: d.roster.length, resultsEditCount: d.results.length,
+      editorRoster: d.roster.map((p, i) => ({ ...p, i })),
+      onRosterField: this.onRosterField, addPlayer: this.addPlayer, onRemovePlayer: this.onRemovePlayer,
+      csvRoster: this.state.csvRoster, onCsvRoster: this.onCsvRoster, importRoster: this.importRoster,
+      editorResults: d.results.map((r, i) => ({ ...r, i, ha: r.home ? 'H' : 'A', confVal: r.conf ? 'Y' : 'N' })),
+      onResultField: this.onResultField, addResult: this.addResult, onRemoveResult: this.onRemoveResult,
+      csvResults: this.state.csvResults, onCsvResults: this.onCsvResults, importResults: this.importResults,
+      editorLastStats: (d.lastStats || []).map((s, i) => ({ ...s, i })),
+      onLastStatField: this.onLastStatField,
+      lastOppLabel: lastR ? ((lastR.home ? 'vs ' : 'at ') + lastR.opp) : 'no matches yet',
+      draftFormation: d.formation, formationOptions: this.mod.FORMATIONS, setFormation: this.setFormation,
+      editorXi: (this.mod.SHAPES[d.formation] || this.mod.SHAPES['4-3-3']).map((slot, i) => ({ i, code: slot[2], val: (d.xi && d.xi[i]) || 0 })),
+      onXiField: this.onXiField,
+      rosterOptions: d.roster.map(p => ({ num: p.num, label: '#' + p.num + ' ' + p.name })),
+      previewXi: mkXi(previewTeam.xi, 34),
+      draftTactical: d.tactical, setDraftTactical: this.setDraftTactical,
+      exportNow: this.exportNow, copyExport: this.copyExport, downloadJSON: this.downloadJSON,
+      exportText: this.state.exportText, importJSON: this.state.importJSON, onImportJSON: this.onImportJSON, loadJSON: this.loadJSON, resetSample: this.resetSample,
+    };
+  }
+}
+</script>
+</body>
+</html>

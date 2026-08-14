@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#c6a04a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="apple-touch-icon" href="./assets/miac-logo.png">
+<script>if('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');</script>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#0a0a0a;font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased}
+  input{font-family:'Inter',sans-serif}
+  input:focus{border-color:rgba(198,160,74,.6)!important;outline:none}
+</style>
+</helmet>
+
+<div style="min-height:100vh;background:#0a0a0a;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px">
+
+  <!-- logo -->
+  <div style="display:flex;flex-direction:column;align-items:center;gap:10px;margin-bottom:40px">
+    <div style="width:64px;height:64px;border-radius:16px;background:linear-gradient(135deg,#1a1a1a,#000);border:2px solid #c6a04a;display:flex;align-items:center;justify-content:center;font-family:'Archivo',sans-serif;font-weight:900;color:#e4c977;font-size:22px">GA</div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:3px">
+      <span style="font-family:'Archivo',sans-serif;font-weight:900;font-size:20px;letter-spacing:.02em;color:#fff">MEN'S SOCCER <span style="color:#e4c977">SCOUTING</span></span>
+      <span style="font-size:11px;letter-spacing:.16em;color:#c6a04a;font-weight:700;text-transform:uppercase">Gustavus Adolphus · Golden Gusties</span>
+    </div>
+  </div>
+
+  <!-- card -->
+  <div style="width:min(420px,100%);background:#141414;border:1px solid rgba(255,255,255,.1);border-radius:20px;overflow:hidden;box-shadow:0 40px 80px rgba(0,0,0,.5)">
+
+    <!-- tabs -->
+    <div style="display:flex;border-bottom:1px solid rgba(255,255,255,.08)">
+      <button onClick="{{ showSignIn }}" style="{{ tabSignIn }}">Sign in</button>
+      <button onClick="{{ showSignUp }}" style="{{ tabSignUp }}">Create account</button>
+    </div>
+
+    <!-- sign in form -->
+    <sc-if value="{{ isSignIn }}" hint-placeholder-val="{{ true }}">
+      <div style="padding:24px 32px;display:flex;flex-direction:column;gap:16px">
+        <div style="display:flex;flex-direction:column;gap:7px">
+          <label style="font-size:11px;letter-spacing:.1em;color:#7a7a7c;font-weight:800">EMAIL</label>
+          <input type="email" value="{{ email }}" onChange="{{ onEmail }}" onKeyDown="{{ onKeyDown }}" placeholder="you@gustavus.edu"
+            style="width:100%;background:#0d0d0d;border:1px solid rgba(255,255,255,.14);border-radius:10px;padding:12px 14px;color:#fff;font-size:14px">
+        </div>
+        <div style="display:flex;flex-direction:column;gap:7px">
+          <label style="font-size:11px;letter-spacing:.1em;color:#7a7a7c;font-weight:800">PASSWORD</label>
+          <input type="password" value="{{ password }}" onChange="{{ onPassword }}" onKeyDown="{{ onKeyDown }}" placeholder="••••••••"
+            style="width:100%;background:#0d0d0d;border:1px solid rgba(255,255,255,.14);border-radius:10px;padding:12px 14px;color:#fff;font-size:14px">
+        </div>
+        <sc-if value="{{ errorMsg }}" hint-placeholder-val="{{ '' }}">
+          <div style="background:rgba(143,34,34,.18);border:1px solid rgba(143,34,34,.4);border-radius:9px;padding:10px 14px;font-size:13px;color:#e07b7b;font-weight:600">{{ errorMsg }}</div>
+        </sc-if>
+        <button onClick="{{ signIn }}" style="{{ btnStyle }}">{{ btnLabel }}</button>
+      </div>
+    </sc-if>
+
+    <!-- sign up form -->
+    <sc-if value="{{ isSignUp }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:24px 32px;display:flex;flex-direction:column;gap:16px">
+        <div style="background:rgba(198,160,74,.08);border:1px solid rgba(198,160,74,.2);border-radius:10px;padding:11px 14px;font-size:12.5px;color:#c6a04a;font-weight:600;line-height:1.5">
+          Requires a <b>@gustavus.edu</b> email. Your account starts as a player — a coach can grant additional access.
+        </div>
+        <div style="display:flex;flex-direction:column;gap:7px">
+          <label style="font-size:11px;letter-spacing:.1em;color:#7a7a7c;font-weight:800">FULL NAME</label>
+          <input type="text" value="{{ name }}" onChange="{{ onName }}" placeholder="First Last"
+            style="width:100%;background:#0d0d0d;border:1px solid rgba(255,255,255,.14);border-radius:10px;padding:12px 14px;color:#fff;font-size:14px">
+        </div>
+        <div style="display:flex;flex-direction:column;gap:7px">
+          <label style="font-size:11px;letter-spacing:.1em;color:#7a7a7c;font-weight:800">GUSTAVUS EMAIL</label>
+          <input type="email" value="{{ email }}" onChange="{{ onEmail }}" placeholder="you@gustavus.edu"
+            style="width:100%;background:#0d0d0d;border:1px solid rgba(255,255,255,.14);border-radius:10px;padding:12px 14px;color:#fff;font-size:14px">
+        </div>
+        <div style="display:flex;flex-direction:column;gap:7px">
+          <label style="font-size:11px;letter-spacing:.1em;color:#7a7a7c;font-weight:800">PASSWORD</label>
+          <input type="password" value="{{ password }}" onChange="{{ onPassword }}" placeholder="At least 6 characters"
+            style="width:100%;background:#0d0d0d;border:1px solid rgba(255,255,255,.14);border-radius:10px;padding:12px 14px;color:#fff;font-size:14px">
+        </div>
+        <sc-if value="{{ errorMsg }}" hint-placeholder-val="{{ '' }}">
+          <div style="background:rgba(143,34,34,.18);border:1px solid rgba(143,34,34,.4);border-radius:9px;padding:10px 14px;font-size:13px;color:#e07b7b;font-weight:600">{{ errorMsg }}</div>
+        </sc-if>
+        <sc-if value="{{ successMsg }}" hint-placeholder-val="{{ '' }}">
+          <div style="background:rgba(28,122,69,.2);border:1px solid rgba(28,122,69,.5);border-radius:9px;padding:10px 14px;font-size:13px;color:#5fbf7a;font-weight:600">{{ successMsg }}</div>
+        </sc-if>
+        <button onClick="{{ signUp }}" style="{{ btnStyle }}">{{ btnLabel }}</button>
+      </div>
+    </sc-if>
+
+  </div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { tab: 'signin', email: '', password: '', name: '', loading: false, errorMsg: '', successMsg: '' };
+
+  async componentDidMount() {
+    try {
+      const { supabase } = await import('./supabase-client.js');
+      // Supabase auto-exchanges #access_token from email confirmation links
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) { location.href = 'MIAC Scouting Hub.dc.html'; return; }
+      // Fallback: listen in case the token exchange happens asynchronously
+      if (window.location.hash.includes('access_token')) {
+        supabase.auth.onAuthStateChange((event, s) => {
+          if (s) location.href = 'MIAC Scouting Hub.dc.html';
+        });
+        return;
+      }
+    } catch (e) {}
+    document.title = 'Sign In · MIAC Scouting';
+  }
+
+  showSignIn = () => this.setState({ tab: 'signin', errorMsg: '', successMsg: '' });
+  showSignUp = () => this.setState({ tab: 'signup', errorMsg: '', successMsg: '' });
+
+  onEmail    = (e) => this.setState({ email: e.target.value, errorMsg: '' });
+  onPassword = (e) => this.setState({ password: e.target.value, errorMsg: '' });
+  onName     = (e) => this.setState({ name: e.target.value, errorMsg: '' });
+  onKeyDown  = (e) => { if (e.key === 'Enter') this.signIn(); };
+
+  signIn = async () => {
+    const { email, password, loading } = this.state;
+    if (loading) return;
+    if (!email.trim()) { this.setState({ errorMsg: 'Enter your email address.' }); return; }
+    if (!password)     { this.setState({ errorMsg: 'Enter your password.' }); return; }
+    this.setState({ loading: true, errorMsg: '' });
+    try {
+      const { supabase } = await import('./supabase-client.js');
+      const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+      if (error) {
+        this.setState({ loading: false, errorMsg: error.message === 'Invalid login credentials' ? 'Incorrect email or password.' : error.message });
+      } else {
+        location.href = 'MIAC Scouting Hub.dc.html';
+      }
+    } catch (e) {
+      this.setState({ loading: false, errorMsg: 'Something went wrong. Try again.' });
+    }
+  };
+
+  signUp = async () => {
+    const { email, password, name, loading } = this.state;
+    if (loading) return;
+    if (!name.trim())  { this.setState({ errorMsg: 'Enter your full name.' }); return; }
+    if (!email.trim()) { this.setState({ errorMsg: 'Enter your Gustavus email.' }); return; }
+    if (!email.toLowerCase().endsWith('@gustavus.edu')) { this.setState({ errorMsg: 'You must use a @gustavus.edu email address.' }); return; }
+    if (!password || password.length < 6) { this.setState({ errorMsg: 'Password must be at least 6 characters.' }); return; }
+    this.setState({ loading: true, errorMsg: '', successMsg: '' });
+    try {
+      const { supabase } = await import('./supabase-client.js');
+      const { error } = await supabase.auth.signUp({
+        email: email.trim(),
+        password,
+        options: { data: { name: name.trim(), role: 'player' } },
+      });
+      if (error) {
+        this.setState({ loading: false, errorMsg: error.message });
+      } else {
+        this.setState({ loading: false, successMsg: 'Account created! Check your Gustavus email to confirm, then sign in.', email: '', password: '', name: '' });
+      }
+    } catch (e) {
+      this.setState({ loading: false, errorMsg: 'Something went wrong. Try again.' });
+    }
+  };
+
+  renderVals() {
+    const { loading, tab, email, password, name, errorMsg, successMsg } = this.state;
+    const isSignIn = tab === 'signin';
+    const tabBase = 'flex:1;padding:14px;font-family:Archivo,sans-serif;font-weight:800;font-size:14px;border:none;cursor:pointer;';
+    return {
+      email, password, name, errorMsg, successMsg,
+      isSignIn, isSignUp: !isSignIn,
+      showSignIn: this.showSignIn, showSignUp: this.showSignUp,
+      onEmail: this.onEmail, onPassword: this.onPassword, onName: this.onName,
+      onKeyDown: this.onKeyDown, signIn: this.signIn, signUp: this.signUp,
+      tabSignIn: tabBase + (isSignIn ? 'background:#141414;color:#e4c977;border-bottom:2px solid #c6a04a;' : 'background:#0f0f0f;color:#8a8a8c;border-bottom:2px solid transparent;'),
+      tabSignUp: tabBase + (!isSignIn ? 'background:#141414;color:#e4c977;border-bottom:2px solid #c6a04a;' : 'background:#0f0f0f;color:#8a8a8c;border-bottom:2px solid transparent;'),
+      btnLabel: loading ? (isSignIn ? 'Signing in…' : 'Creating account…') : (isSignIn ? 'Sign in' : 'Create account'),
+      btnStyle: `width:100%;background:${loading ? 'rgba(198,160,74,.5)' : 'linear-gradient(135deg,#c6a04a,#e4c977)'};color:#161616;border:none;border-radius:10px;padding:13px;font-family:'Archivo',sans-serif;font-weight:800;font-size:15px;letter-spacing:.03em;cursor:${loading ? 'default' : 'pointer'}`,
+    };
+  }
+}
+</script>
+</body>
+</html>

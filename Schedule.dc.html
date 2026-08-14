@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#c6a04a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="apple-touch-icon" href="./assets/miac-logo.png">
+<script>if('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');</script>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#0a0a0a;font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased}
+  ::-webkit-scrollbar{width:9px;height:9px}
+  ::-webkit-scrollbar-thumb{background:rgba(255,255,255,.16);border-radius:8px}
+  ::-webkit-scrollbar-track{background:transparent}
+  textarea,input,select{font-family:'Inter',sans-serif}
+  input:focus,textarea:focus,select:focus{border-color:rgba(198,160,74,.6)!important}
+  select option{background:#161616;color:#fff}
+  @media(max-width:768px){
+    .sched-topbar{padding:10px 16px!important}
+    .sched-topbar-links{display:none!important}
+    .sched-content{padding:16px 14px 56px!important}
+    .sched-cols{grid-template-columns:1.4fr 46px 44px 36px 44px!important}
+  }
+</style>
+</helmet>
+
+<div style="min-height:100vh;background:#0a0a0a;display:flex;flex-direction:column;align-items:center;font-family:'Inter',sans-serif">
+
+  <!-- header -->
+  <div style="width:100%;background:linear-gradient(180deg,#161616,#0d0d0d);border-bottom:1px solid rgba(198,160,74,.3);position:sticky;top:0;z-index:30">
+    <div class="sched-topbar" style="max-width:1320px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:14px 40px">
+      <a href="MIAC Scouting Hub.dc.html" style="display:flex;align-items:center;gap:18px;text-decoration:none">
+        <img src="assets/miac-logo.png" alt="MIAC" style="height:42px;width:auto;display:block;filter:drop-shadow(0 2px 6px rgba(0,0,0,.6))">
+        <div style="width:1px;height:32px;background:rgba(255,255,255,.14)"></div>
+        <div style="display:flex;flex-direction:column;line-height:1.05">
+          <span style="font-family:'Archivo',sans-serif;font-weight:900;font-size:17px;letter-spacing:.02em;color:#fff">MEN'S SOCCER <span style="color:#e4c977">SCOUTING</span></span>
+          <span style="font-size:11px;letter-spacing:.16em;color:#c6a04a;font-weight:700;text-transform:uppercase">Gustavus Adolphus · Golden Gusties</span>
+        </div>
+      </a>
+      <div style="display:flex;align-items:center;gap:22px">
+        <a class="sched-topbar-links" href="MIAC Scouting Hub.dc.html" style="color:#cfcfcf;font-size:13px;font-weight:600;text-decoration:none">Teams</a>
+        <span style="color:#e4c977;font-size:13px;font-weight:700;border-bottom:2px solid #c6a04a;padding-bottom:2px">Schedule</span>
+        <a class="sched-topbar-links" href="Reports.dc.html" style="color:#cfcfcf;font-size:13px;font-weight:600;text-decoration:none">Reports</a>
+        <div style="position:relative">
+          <button onClick="{{ toggleUserMenu }}" style="display:flex;align-items:center;gap:9px;background:#000;border:1px solid rgba(255,255,255,.12);border-radius:999px;padding:4px 13px 4px 4px;cursor:pointer">
+            <span style="{{ me.avatarStyle }}">{{ me.initials }}</span>
+            <span style="display:flex;flex-direction:column;align-items:flex-start;line-height:1.15">
+              <span style="font-size:12.5px;font-weight:700;color:#fff">{{ me.name }}</span>
+              <span style="font-size:10px;font-weight:700;color:{{ me.roleFg }}">{{ me.roleLabel }}</span>
+            </span>
+            <span style="color:#8a8a8c;font-size:10px;margin-left:2px">▾</span>
+          </button>
+          <sc-if value="{{ userMenuOpen }}" hint-placeholder-val="{{ false }}">
+            <div onClick="{{ closeUserMenu }}" style="position:fixed;inset:0;z-index:40"></div>
+            <div style="position:absolute;right:0;top:calc(100% + 8px);z-index:41;width:272px;background:#161616;border:1px solid rgba(255,255,255,.14);border-radius:13px;box-shadow:0 24px 60px rgba(0,0,0,.6);padding:8px">
+              <div style="font-size:10px;letter-spacing:.1em;color:#6e6e70;font-weight:800;padding:8px 10px 6px">SWITCH USER · DEMO</div>
+              <sc-for list="{{ switcher }}" as="u" hint-placeholder-count="5">
+                <button onClick="{{ u.onSwitch }}" style="{{ u.rowStyle }}">
+                  <span style="{{ u.avatarStyle }}">{{ u.initials }}</span>
+                  <span style="display:flex;flex-direction:column;align-items:flex-start;line-height:1.2;flex:1;min-width:0">
+                    <span style="font-size:13px;font-weight:700;color:#fff">{{ u.name }}</span>
+                    <span style="font-size:10.5px;font-weight:700;color:{{ u.roleFg }}">{{ u.roleLabel }}</span>
+                  </span>
+                  <span style="{{ u.checkStyle }}">✓</span>
+                </button>
+              </sc-for>
+              <a href="Admin.dc.html" style="{{ adminLinkStyle }}">⚙ Manage access</a>
+            </div>
+          </sc-if>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sched-content" style="width:100%;max-width:1320px;padding:26px 40px 72px">
+
+    <!-- title + toolbar -->
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:20px;margin-bottom:6px;flex-wrap:wrap">
+      <div style="display:flex;flex-direction:column;gap:5px">
+        <span style="font-family:'Archivo',sans-serif;font-weight:900;font-size:28px;color:#fff;letter-spacing:-.01em">2026 Schedule</span>
+        <span style="font-size:13.5px;color:#9a9a9c;font-weight:600">Gustavus Adolphus · Men's Soccer · {{ summary }}</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;min-height:38px">
+        <span style="font-size:12.5px;font-weight:700;color:#5fbf7a">{{ flash }}</span>
+        <sc-if value="{{ canEdit }}" hint-placeholder-val="{{ false }}">
+          <button onClick="{{ openImport }}" style="background:rgba(255,255,255,.06);color:#cfcfcf;border:1px solid rgba(255,255,255,.16);border-radius:9px;padding:9px 15px;font-weight:700;font-size:12.5px;cursor:pointer">Import / paste</button>
+          <button onClick="{{ resetSchedule }}" style="background:transparent;color:#9a9a9c;border:1px solid rgba(255,255,255,.16);border-radius:9px;padding:9px 15px;font-weight:700;font-size:12.5px;cursor:pointer">Reset</button>
+          <button onClick="{{ openAddBtn }}" style="background:linear-gradient(135deg,#c6a04a,#e4c977);color:#161616;border:none;border-radius:9px;padding:9px 17px;font-family:'Archivo',sans-serif;font-weight:800;font-size:12.5px;letter-spacing:.03em;cursor:pointer">+ Add event</button>
+        </sc-if>
+        <sc-if value="{{ viewOnly }}" hint-placeholder-val="{{ true }}">
+          <span style="font-size:12px;font-weight:700;color:#8a8a8c;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:8px 14px">🔒 View only</span>
+        </sc-if>
+      </div>
+    </div>
+
+    <!-- legend -->
+    <div style="display:flex;align-items:center;gap:18px;margin:12px 0 22px;font-size:11.5px;color:#8a8a8c;font-weight:600;flex-wrap:wrap">
+      <span style="display:flex;align-items:center;gap:7px"><span style="width:11px;height:11px;border-radius:3px;background:#b1232e"></span>MIAC game</span>
+      <span style="display:flex;align-items:center;gap:7px"><span style="width:11px;height:11px;border-radius:3px;background:#5a5a5e"></span>Non-conf game</span>
+      <span style="display:flex;align-items:center;gap:7px"><span style="width:11px;height:11px;border-radius:3px;background:#1c5e35"></span>Training</span>
+      <span style="display:flex;align-items:center;gap:7px"><span style="width:11px;height:11px;border-radius:3px;background:#3a2a6e"></span>Meeting</span>
+      <span style="display:flex;align-items:center;gap:7px"><span style="width:11px;height:11px;border-radius:3px;background:#6b4510"></span>Travel</span>
+      <span style="color:#3c3c3e">|</span>
+      <span><b style="color:#cfcfcf;font-weight:700">vs</b> = home · <b style="color:#cfcfcf;font-weight:700">@</b> = away</span>
+      <sc-if value="{{ canEdit }}" hint-placeholder-val="{{ false }}"><span style="color:#6e6e70">· Click to edit, or any day to add</span></sc-if>
+    </div>
+
+    <!-- months -->
+    <div style="display:flex;flex-direction:column;gap:28px">
+      <sc-for list="{{ months }}" as="m" hint-placeholder-count="3">
+        <div style="background:#121212;border:1px solid rgba(255,255,255,.08);border-radius:16px;overflow:hidden">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:15px 22px;border-bottom:1px solid rgba(255,255,255,.07);background:linear-gradient(180deg,#171717,#121212)">
+            <span style="font-family:'Archivo',sans-serif;font-weight:800;font-size:18px;color:#fff;letter-spacing:.01em">{{ m.label }}</span>
+            <span style="font-size:11.5px;color:#7a7a7c;font-weight:700">{{ m.count }}</span>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(7,1fr);background:#0e0e0e;border-bottom:1px solid rgba(255,255,255,.06)">
+            <span style="padding:9px 11px;font-size:10px;letter-spacing:.1em;color:#6e6e70;font-weight:800">SUN</span>
+            <span style="padding:9px 11px;font-size:10px;letter-spacing:.1em;color:#6e6e70;font-weight:800">MON</span>
+            <span style="padding:9px 11px;font-size:10px;letter-spacing:.1em;color:#6e6e70;font-weight:800">TUE</span>
+            <span style="padding:9px 11px;font-size:10px;letter-spacing:.1em;color:#6e6e70;font-weight:800">WED</span>
+            <span style="padding:9px 11px;font-size:10px;letter-spacing:.1em;color:#6e6e70;font-weight:800">THU</span>
+            <span style="padding:9px 11px;font-size:10px;letter-spacing:.1em;color:#6e6e70;font-weight:800">FRI</span>
+            <span style="padding:9px 11px;font-size:10px;letter-spacing:.1em;color:#6e6e70;font-weight:800">SAT</span>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(7,1fr)">
+            <sc-for list="{{ m.cells }}" as="d" hint-placeholder-count="35">
+              <div onClick="{{ d.onAdd }}" style="{{ d.cellStyle }}">
+                <sc-if value="{{ d.show }}" hint-placeholder-val="{{ true }}">
+                  <span style="{{ d.numStyle }}">{{ d.dayNum }}</span>
+                  <div style="display:flex;flex-direction:column;gap:4px;margin-top:5px">
+                    <sc-for list="{{ d.events }}" as="e" hint-placeholder-count="1">
+                      <button onClick="{{ e.onClick }}" style="{{ e.style }}">
+                        <span style="display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ e.label }}</span>
+                        <span style="display:block;font-size:9.5px;font-weight:600;opacity:.85;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ e.sub }}</span>
+                      </button>
+                    </sc-for>
+                  </div>
+                </sc-if>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+  <!-- ============ EDIT / ADD GAME MODAL ============ -->
+  <sc-if value="{{ editOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.72);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:24px">
+      <div style="width:min(540px,96vw);background:#111;border:1px solid rgba(198,160,74,.3);border-radius:18px;overflow:hidden;box-shadow:0 40px 100px rgba(0,0,0,.7)">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 24px;border-bottom:1px solid rgba(255,255,255,.1);background:linear-gradient(180deg,#181818,#111)">
+          <span style="font-family:'Archivo',sans-serif;font-weight:900;font-size:17px;color:#fff">{{ ed.title }}</span>
+          <button onClick="{{ closeEdit }}" style="background:transparent;border:none;color:#8a8a8c;font-size:22px;font-weight:700;cursor:pointer;line-height:1">×</button>
+        </div>
+        <div style="padding:22px 24px;display:flex;flex-direction:column;gap:18px">
+          <!-- event type selector -->
+          <div style="display:flex;flex-direction:column;gap:7px">
+            <span style="font-size:11px;letter-spacing:.1em;color:#7a7a7c;font-weight:800">EVENT TYPE</span>
+            <select value="{{ ed.eventType }}" data-f="event_type" onChange="{{ onDraftField }}" style="width:100%;background:#0d0d0d;border:1px solid rgba(255,255,255,.12);border-radius:9px;padding:10px 12px;color:#fff;font-size:13.5px;outline:none">
+              <option value="game">⚽  Game</option>
+              <option value="training">🏃  Training</option>
+              <option value="meeting">📋  Meeting</option>
+              <option value="travel">✈  Travel</option>
+            </select>
+          </div>
+          <!-- title/opponent field -->
+          <div style="display:flex;flex-direction:column;gap:7px">
+            <span style="font-size:11px;letter-spacing:.1em;color:#7a7a7c;font-weight:800">{{ ed.nameLabel }}</span>
+            <input value="{{ ed.name }}" data-f="name" onChange="{{ onDraftField }}" placeholder="{{ ed.namePlaceholder }}" style="width:100%;background:#0d0d0d;border:1px solid rgba(255,255,255,.12);border-radius:9px;padding:11px 13px;color:#fff;font-size:14px;outline:none">
+            <span style="{{ ed.matchStyle }}">{{ ed.matchNote }}</span>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+            <div style="display:flex;flex-direction:column;gap:7px">
+              <span style="font-size:11px;letter-spacing:.1em;color:#7a7a7c;font-weight:800">DATE</span>
+              <input type="date" value="{{ ed.date }}" data-f="date" onChange="{{ onDraftField }}" style="width:100%;background:#0d0d0d;border:1px solid rgba(255,255,255,.12);border-radius:9px;padding:10px 12px;color:#fff;font-size:13.5px;outline:none">
+            </div>
+            <div style="display:flex;flex-direction:column;gap:7px">
+              <span style="font-size:11px;letter-spacing:.1em;color:#7a7a7c;font-weight:800">{{ ed.timeLabel }}</span>
+              <input value="{{ ed.time }}" data-f="time" onChange="{{ onDraftField }}" placeholder="3:30 PM" style="width:100%;background:#0d0d0d;border:1px solid rgba(255,255,255,.12);border-radius:9px;padding:10px 12px;color:#fff;font-size:13.5px;outline:none">
+            </div>
+          </div>
+          <!-- game-only: home/away + venue -->
+          <div style="{{ ed.gameFieldsStyle }}">
+            <div style="display:grid;grid-template-columns:160px 1fr;gap:14px">
+              <div style="display:flex;flex-direction:column;gap:7px">
+                <span style="font-size:11px;letter-spacing:.1em;color:#7a7a7c;font-weight:800">PLAYING</span>
+                <select value="{{ ed.homeVal }}" data-f="home" onChange="{{ onDraftField }}" style="width:100%;background:#0d0d0d;border:1px solid rgba(255,255,255,.12);border-radius:9px;padding:10px 12px;color:#fff;font-size:13.5px;outline:none">
+                  <option value="H">Home</option>
+                  <option value="A">Away</option>
+                </select>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:7px">
+                <span style="font-size:11px;letter-spacing:.1em;color:#7a7a7c;font-weight:800">VENUE</span>
+                <input value="{{ ed.venue }}" data-f="venue" onChange="{{ onDraftField }}" placeholder="Hollingsworth Field" style="width:100%;background:#0d0d0d;border:1px solid rgba(255,255,255,.12);border-radius:9px;padding:10px 12px;color:#fff;font-size:13.5px;outline:none">
+              </div>
+            </div>
+          </div>
+          <!-- non-game: location/notes -->
+          <div style="{{ ed.nonGameLabelStyle }}">
+            <span style="font-size:11px;letter-spacing:.1em;color:#7a7a7c;font-weight:800">{{ ed.venueLabel }}</span>
+            <input value="{{ ed.venue }}" data-f="venue" onChange="{{ onDraftField }}" placeholder="{{ ed.venuePlaceholder }}" style="width:100%;background:#0d0d0d;border:1px solid rgba(255,255,255,.12);border-radius:9px;padding:10px 12px;color:#fff;font-size:13.5px;outline:none">
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 24px;border-top:1px solid rgba(255,255,255,.1);background:#0e0e0e">
+          <sc-if value="{{ ed.isEdit }}" hint-placeholder-val="{{ false }}">
+            <button onClick="{{ deleteGame }}" style="background:rgba(143,34,34,.18);color:#e07b7b;border:1px solid rgba(143,34,34,.5);border-radius:8px;padding:9px 15px;font-weight:700;font-size:12.5px;cursor:pointer">{{ ed.deleteLabel }}</button>
+          </sc-if>
+          <sc-if value="{{ ed.isAdd }}" hint-placeholder-val="{{ true }}"><span></span></sc-if>
+          <div style="display:flex;align-items:center;gap:10px">
+            <button onClick="{{ closeEdit }}" style="background:transparent;border:1px solid rgba(255,255,255,.2);color:#cfcfcf;border-radius:8px;padding:9px 16px;font-weight:700;font-size:13px;cursor:pointer">Cancel</button>
+            <button onClick="{{ saveGame }}" style="background:linear-gradient(135deg,#c6a04a,#e4c977);color:#161616;border:none;border-radius:8px;padding:9px 22px;font-family:'Archivo',sans-serif;font-weight:800;font-size:13px;cursor:pointer">{{ ed.saveLabel }}</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ============ IMPORT MODAL ============ -->
+  <sc-if value="{{ importOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.72);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:24px">
+      <div style="width:min(720px,96vw);background:#111;border:1px solid rgba(198,160,74,.3);border-radius:18px;overflow:hidden;box-shadow:0 40px 100px rgba(0,0,0,.7)">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 24px;border-bottom:1px solid rgba(255,255,255,.1);background:linear-gradient(180deg,#181818,#111)">
+          <div style="display:flex;flex-direction:column;gap:2px">
+            <span style="font-family:'Archivo',sans-serif;font-weight:900;font-size:17px;color:#fff">Import schedule</span>
+            <span style="font-size:11.5px;color:#8a8a8c;font-weight:600">Replaces the whole calendar</span>
+          </div>
+          <button onClick="{{ closeImport }}" style="background:transparent;border:none;color:#8a8a8c;font-size:22px;font-weight:700;cursor:pointer;line-height:1">×</button>
+        </div>
+        <div style="padding:20px 24px;display:flex;flex-direction:column;gap:14px">
+          <span style="font-size:11.5px;color:#7a7a7c;line-height:1.55">Paste the <b style="color:#cfcfcf">.ics</b> calendar or the <b style="color:#cfcfcf">Text</b> schedule straight from gogusties.com — or one game per line: <span style="font-family:monospace;color:#9bd6a8">2026-09-19, St. Olaf, H, 3:30 PM, Hollingsworth Field</span></span>
+          <textarea value="{{ importText }}" onChange="{{ onImportText }}" placeholder="Aug 20 (Thu)   11:00 AM   Away   St. Olaf   Northfield, Minn.&#10;— or —&#10;BEGIN:VCALENDAR …" style="width:100%;height:200px;background:#0d0d0d;border:1px solid rgba(255,255,255,.12);border-radius:9px;padding:12px;color:#e6e6e6;font-size:12px;font-family:monospace;line-height:1.5;outline:none;resize:vertical"></textarea>
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+            <button onClick="{{ applyImport }}" style="background:linear-gradient(135deg,#c6a04a,#e4c977);color:#161616;border:none;border-radius:8px;padding:9px 18px;font-family:'Archivo',sans-serif;font-weight:800;font-size:12.5px;cursor:pointer">Replace calendar</button>
+            <label style="display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,.06);color:#cfcfcf;border:1px solid rgba(255,255,255,.16);border-radius:8px;padding:9px 14px;font-weight:700;font-size:12.5px;cursor:pointer">
+              ↑ Upload file
+              <input type="file" accept=".txt,.csv,.ics,text/calendar,text/plain" onChange="{{ onImportFile }}" style="display:none">
+            </label>
+            <span style="font-size:11px;color:#6e6e70;font-weight:600">{{ flash }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { schedule: [], users: [], meId: null, userMenuOpen: false,
+    editOpen: false, editIndex: null, draft: null, flash: '',
+    importOpen: false, importText: '' };
+
+  async componentDidMount() {
+    try { this.auth = await import('./auth.js?v=2'); } catch (e) { console.error('auth load failed', e); }
+    try { this.mod = await import('./data.js?v=8'); } catch (e) { console.error('data load failed', e); }
+    const a = this.auth, m = this.mod;
+    const session = await this.auth.getSession();
+    if (!session) { location.href = 'Login.dc.html'; return; }
+    const [schedule, users, meId, me] = await Promise.all([
+      m ? m.getSchedule() : Promise.resolve([]),
+      a ? a.getUsers() : Promise.resolve([]),
+      a ? a.getCurrentUserId() : Promise.resolve(null),
+      a ? a.getCurrentUser() : Promise.resolve({ name: 'Guest', role: 'player', email: '' }),
+    ]);
+    this.setState({ schedule, users, meId, me });
+    document.title = '2026 Schedule · MIAC Scouting';
+  }
+
+  canEdit() { const me = this.state.me; return !!(me && (me.role === 'coach' || me.role === 'admin')); }
+  flashMsg(msg) { this.setState({ flash: msg }); clearTimeout(this._f); this._f = setTimeout(() => this.setState({ flash: '' }), 2400); }
+
+  toggleUserMenu = () => this.setState(s => ({ userMenuOpen: !s.userMenuOpen }));
+  closeUserMenu = () => this.setState({ userMenuOpen: false });
+  switchUser(id) { this.auth.setCurrentUser(id); location.reload(); }
+
+  defaultDate() { const s = this.state.schedule; return (s[0] && s[0].date) || '2026-09-01'; }
+
+  openAdd(iso) { if (!this.canEdit()) return; this.setState({ editOpen: true, editIndex: null, draft: { event_type: 'game', date: iso || this.defaultDate(), name: '', home: true, time: '', venue: '', opp: null, conf: false } }); }
+  openAddBtn = () => this.openAdd(null);
+  openEdit(i) { if (!this.canEdit()) return; this.setState({ editOpen: true, editIndex: i, draft: { event_type: 'game', ...this.state.schedule[i] } }); }
+  closeEdit = () => this.setState({ editOpen: false });
+  onDraftField = (e) => { const f = e.target.dataset.f; let v = e.target.value; if (f === 'home') v = (v === 'H'); this.setState(s => ({ draft: { ...s.draft, [f]: v } })); };
+
+  saveGame = async () => {
+    const d = { ...this.state.draft };
+    if (!d.date) { this.flashMsg('Pick a date first'); return; }
+    const type = d.event_type || 'game';
+    if (type === 'game') {
+      const key = this.mod.matchTeam(d.name || '');
+      d.opp = key || null; d.conf = !!key;
+      d.name = key ? this.mod.BASE[key].short : ((d.name || '').trim() || 'Opponent');
+    } else {
+      d.opp = null; d.conf = false;
+      d.name = (d.name || '').trim() || (type.charAt(0).toUpperCase() + type.slice(1));
+    }
+    let list = this.state.schedule.slice();
+    if (this.state.editIndex == null) list.push(d); else list[this.state.editIndex] = d;
+    list.sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
+    await this.mod.saveSchedule(list);
+    this.setState({ schedule: list, editOpen: false });
+    this.flashMsg('Saved');
+  };
+  deleteGame = async () => {
+    if (this.state.editIndex == null) return;
+    const list = this.state.schedule.filter((_, i) => i !== this.state.editIndex);
+    await this.mod.saveSchedule(list);
+    this.setState({ schedule: list, editOpen: false });
+    this.flashMsg('Removed');
+  };
+
+  openImport = () => { if (!this.canEdit()) return; this.setState({ importOpen: true, importText: '' }); };
+  closeImport = () => this.setState({ importOpen: false });
+  onImportText = (e) => this.setState({ importText: e.target.value });
+  applyImport = async () => { const f = this.mod.parseScheduleText(this.state.importText || ''); if (f.length) { await this.mod.saveSchedule(f); this.setState({ schedule: f, importOpen: false }); this.flashMsg('Loaded ' + f.length + ' games'); } else this.flashMsg('Nothing parsed — check the format'); };
+  onImportFile = (e) => {
+    const file = e.target.files && e.target.files[0]; e.target.value = '';
+    if (!file) return;
+    const r = new FileReader();
+    r.onload = () => { const t = String(r.result || ''); const f = this.mod.parseScheduleText(t); this.setState({ importText: t }); this.flashMsg(f.length ? ('Parsed ' + f.length + ' — review & apply') : ('Could not parse ' + file.name)); };
+    r.onerror = () => this.flashMsg('Could not read that file');
+    r.readAsText(file);
+  };
+  resetSchedule = async () => { if (!this.canEdit()) return; await this.mod.clearSchedule(); const s = await this.mod.getSchedule(); this.setState({ schedule: s }); this.flashMsg('Reset to 2026 schedule'); };
+
+  authVals() {
+    const A = this.auth;
+    const blank = { initials: '·', name: 'Loading…', roleLabel: '', roleFg: '#8a8a8c', avatarStyle: 'display:flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.1);color:#888;font-family:Archivo,sans-serif;font-weight:800;font-size:13px' };
+    if (!A) return { me: blank, switcher: [], userMenuOpen: false, toggleUserMenu: this.toggleUserMenu, closeUserMenu: this.closeUserMenu, adminLinkStyle: 'display:none' };
+    const avatar = (role, sz) => { const c = A.roleColor(role); return `display:flex;align-items:center;justify-content:center;width:${sz}px;height:${sz}px;border-radius:50%;background:${c.bg};color:${c.fg};font-family:Archivo,sans-serif;font-weight:800;font-size:${sz > 34 ? 13 : 11}px;flex-shrink:0`; };
+    const me = this.state.me || { name: 'Guest', role: 'player', email: '' }; const mc = A.roleColor(me.role);
+    return {
+      me: { initials: A.initials(me.name), name: me.name, roleLabel: A.ROLE_LABEL[me.role], roleFg: mc.fg, avatarStyle: avatar(me.role, 38) },
+      userMenuOpen: this.state.userMenuOpen, toggleUserMenu: this.toggleUserMenu, closeUserMenu: this.closeUserMenu,
+      switcher: this.state.users.map(u => {
+        const c = A.roleColor(u.role); const cur = u.id === this.state.meId;
+        return {
+          initials: A.initials(u.name), name: u.name, roleLabel: A.ROLE_LABEL[u.role], roleFg: c.fg, avatarStyle: avatar(u.role, 32),
+          rowStyle: `display:flex;align-items:center;gap:11px;width:100%;text-align:left;cursor:pointer;border:none;border-radius:9px;padding:9px 10px;background:${cur ? 'rgba(198,160,74,.12)' : 'transparent'}`,
+          checkStyle: cur ? 'color:#e4c977;font-size:13px;font-weight:800' : 'color:transparent;font-size:13px',
+          onSwitch: () => this.switchUser(u.id),
+        };
+      }),
+      adminLinkStyle: (me.role === 'admin')
+        ? 'display:flex;align-items:center;gap:8px;margin-top:6px;padding:11px 10px;border-top:1px solid rgba(255,255,255,.1);color:#e4c977;font-size:13px;font-weight:700;text-decoration:none;cursor:pointer'
+        : 'display:none',
+    };
+  }
+
+  renderVals() {
+    const canEdit = this.canEdit();
+    const sched = this.state.schedule || [];
+    const MO = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    const parseISO = (s) => { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s || ''); return m ? new Date(+m[1], +m[2] - 1, +m[3]) : null; };
+    const iso = (y, m, d) => `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+    const todayISO = (() => { const t = new Date(); return iso(t.getFullYear(), t.getMonth(), t.getDate()); })();
+
+    const DARKFIX = { '#1a1a1a': '#3a3b40' };
+    const NC = (this.mod && this.mod.NONCONF_TEAMS) || {};
+    const BASE = (this.mod && this.mod.BASE) || {};
+    const colorFor = (g) => {
+      const type = g.event_type || 'game';
+      if (type === 'training') return '#1c5e35';
+      if (type === 'meeting') return '#3a2a6e';
+      if (type === 'travel') return '#6b4510';
+      let c = '#4a4a4e'; if (g.opp && BASE[g.opp]) c = BASE[g.opp].primary; else if (NC[g.name]) c = NC[g.name].primary; return DARKFIX[c] || c || '#4a4a4e';
+    };
+
+    // group events by date
+    const byDate = {};
+    sched.forEach((g, i) => { if (!g.date) return; (byDate[g.date] = byDate[g.date] || []).push({ ...g, _i: i }); });
+
+    const mkEvents = (list) => (list || []).map(g => {
+      const type = g.event_type || 'game';
+      let label, sub;
+      if (type === 'game') {
+        label = (g.home ? 'vs ' : '@ ') + (g.name || 'Opponent');
+        sub = (g.time || 'TBD') + (g.venue ? ' · ' + g.venue : '');
+      } else {
+        const icon = type === 'training' ? '⚽ ' : type === 'meeting' ? '📋 ' : '✈ ';
+        label = icon + (g.name || (type.charAt(0).toUpperCase() + type.slice(1)));
+        sub = (g.time || '') + (g.venue ? (g.time ? ' · ' : '') + g.venue : '');
+      }
+      return {
+        label, sub,
+        style: `display:block;width:100%;text-align:left;border:none;border-radius:5px;padding:4px 7px;background:${colorFor(g)};color:#fff;cursor:${canEdit ? 'pointer' : 'default'};box-shadow:0 1px 2px rgba(0,0,0,.45);font-size:11px;font-weight:700;line-height:1.25;overflow:hidden`,
+        onClick: (ev) => { if (ev && ev.stopPropagation) ev.stopPropagation(); this.openEdit(g._i); },
+      };
+    });
+
+    const buildMonth = (y, mo) => {
+      const startWd = new Date(y, mo, 1).getDay();
+      const dim = new Date(y, mo + 1, 0).getDate();
+      const cells = [];
+      let count = 0;
+      for (let i = 0; i < startWd; i++) cells.push({ show: false, cellStyle: 'min-height:108px;background:#0c0c0c;border-right:1px solid rgba(255,255,255,.05);border-bottom:1px solid rgba(255,255,255,.05)' });
+      for (let d = 1; d <= dim; d++) {
+        const dISO = iso(y, mo, d);
+        const evs = byDate[dISO] || [];
+        count += evs.length;
+        const isToday = dISO === todayISO;
+        cells.push({
+          show: true, dayNum: d, iso: dISO,
+          numStyle: `display:inline-flex;align-items:center;justify-content:center;min-width:23px;height:23px;font-size:12px;font-weight:700;border-radius:50%;color:${isToday ? '#161616' : '#cfcfcf'};background:${isToday ? '#e4c977' : 'transparent'}`,
+          cellStyle: `min-height:108px;padding:7px 8px;background:#141414;border-right:1px solid rgba(255,255,255,.05);border-bottom:1px solid rgba(255,255,255,.05);cursor:${canEdit ? 'pointer' : 'default'};${evs.length ? '' : ''}`,
+          events: mkEvents(evs),
+          onAdd: canEdit ? () => this.openAdd(dISO) : undefined,
+        });
+      }
+      while (cells.length % 7 !== 0) cells.push({ show: false, cellStyle: 'min-height:108px;background:#0c0c0c;border-right:1px solid rgba(255,255,255,.05);border-bottom:1px solid rgba(255,255,255,.05)' });
+      return { label: MO[mo] + ' ' + y, count: count + (count === 1 ? ' event' : ' events'), cells };
+    };
+
+    const dates = sched.map(g => g.date).filter(Boolean).sort();
+    let months = [];
+    if (dates.length) {
+      const f = parseISO(dates[0]), l = parseISO(dates[dates.length - 1]);
+      let y = f.getFullYear(), mo = f.getMonth();
+      const ey = l.getFullYear(), em = l.getMonth();
+      let guard = 0;
+      while ((y < ey || (y === ey && mo <= em)) && guard < 36) { months.push(buildMonth(y, mo)); mo++; if (mo > 11) { mo = 0; y++; } guard++; }
+    } else {
+      months = [buildMonth(2026, 8)];
+    }
+
+    const total = sched.length;
+    const games = sched.filter(g => (g.event_type || 'game') === 'game');
+    const confN = games.filter(g => g.conf).length;
+    const otherN = total - games.length;
+    const summary = total ? `${games.length} game${games.length !== 1 ? 's' : ''} · ${confN} MIAC · ${games.length - confN} non-conf${otherN ? ' · ' + otherN + ' other event' + (otherN !== 1 ? 's' : '') : ''}` : 'No events scheduled';
+
+    // editor draft
+    let ed = { title: '', name: '', date: '', time: '', venue: '', homeVal: 'H', isEdit: false, isAdd: true, matchNote: '', matchStyle: 'display:none', eventType: 'game', gameFieldsStyle: 'display:contents', nonGameLabelStyle: 'display:none', namePlaceholder: 'e.g. St. Olaf, Chicago, Luther…', nameLabel: 'OPPONENT', timeLabel: 'KICKOFF', venuePlaceholder: 'Hollingsworth Field', deleteLabel: 'Delete event', saveLabel: 'Save event' };
+    const dr = this.state.draft;
+    if (dr) {
+      const type = dr.event_type || 'game';
+      const isGame = type === 'game';
+      const key = (isGame && this.mod) ? this.mod.matchTeam(dr.name || '') : null;
+      const isEdit = this.state.editIndex != null;
+      const typeLabels = { game: 'game', training: 'training', meeting: 'meeting', travel: 'travel' };
+      const namePlaceholders = { game: 'e.g. St. Olaf, Chicago, Luther…', training: 'e.g. Pre-season fitness, Tactics session', meeting: 'e.g. Team meeting, Coaches debrief', travel: 'e.g. Bus to Northfield, Flight to Chicago' };
+      const venueLabels = { game: 'VENUE', training: 'LOCATION', meeting: 'LOCATION', travel: 'DESTINATION' };
+      const venuePlaceholders = { game: 'Hollingsworth Field', training: 'GAC Training Pitch', meeting: 'Athletic Conference Room', travel: 'St. Olaf College' };
+      ed = {
+        title: isEdit ? ('Edit ' + (typeLabels[type] || 'event')) : ('Add ' + (typeLabels[type] || 'event')),
+        name: dr.name || '', date: dr.date || '', time: dr.time || '', venue: dr.venue || '',
+        homeVal: dr.home ? 'H' : 'A', isEdit, isAdd: !isEdit, eventType: type,
+        gameFieldsStyle: isGame ? 'display:block' : 'display:none',
+        nonGameLabelStyle: !isGame ? 'display:flex;flex-direction:column;gap:7px' : 'display:none',
+        nameLabel: isGame ? 'OPPONENT' : 'TITLE',
+        namePlaceholder: namePlaceholders[type] || '',
+        timeLabel: isGame ? 'KICKOFF' : 'TIME',
+        venuePlaceholder: venuePlaceholders[type] || 'Location',
+        venueLabel: venueLabels[type] || 'LOCATION',
+        deleteLabel: 'Delete ' + (typeLabels[type] || 'event'),
+        saveLabel: 'Save ' + (typeLabels[type] || 'event'),
+        matchNote: isGame ? ((dr.name && dr.name.trim()) ? (key ? ('✓ MIAC opponent — links to the ' + this.mod.BASE[key].short + ' scouting page') : 'Non-conference opponent') : 'Type the opponent name') : '',
+        matchStyle: isGame ? `font-size:11.5px;font-weight:700;color:${(dr.name && dr.name.trim()) ? (key ? '#e4c977' : '#8aa0bf') : '#6e6e70'}` : 'display:none',
+      };
+    }
+
+    return {
+      ...this.authVals(),
+      canEdit, viewOnly: !canEdit,
+      flash: this.state.flash,
+      summary, months,
+      openAddBtn: this.openAddBtn, openImport: this.openImport, resetSchedule: this.resetSchedule,
+      editOpen: this.state.editOpen, ed, onDraftField: this.onDraftField, saveGame: this.saveGame, deleteGame: this.deleteGame, closeEdit: this.closeEdit, openAddBtn: this.openAddBtn,
+      importOpen: this.state.importOpen, importText: this.state.importText, onImportText: this.onImportText, applyImport: this.applyImport, onImportFile: this.onImportFile, closeImport: this.closeImport,
+    };
+  }
+}
+</script>
+</body>
+</html>
