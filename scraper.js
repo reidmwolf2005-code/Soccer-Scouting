@@ -359,11 +359,57 @@ function normalizeYear(s) {
   return 'Fr.';
 }
 
+// ── Standings scraper ─────────────────────────────────────────────────────────
+const MIAC_NAME_MAP = {
+  'augsburg': 'AUG', 'bethel': 'BU', 'carleton': 'CAR', 'concordia': 'CON',
+  'gustavus': 'GUS', 'gustavus adolphus': 'GUS', 'hamline': 'HAM',
+  'macalester': 'MAC', "saint john's": 'SJU', "st. john's": 'SJU',
+  "saint mary's": 'SMU', "st. mary's": 'SMU', 'st. olaf': 'OLE',
+  'st. scholastica': 'CSS', 'college of st. scholastica': 'CSS',
+};
+
+async function scrapeStandings() {
+  const url = 'https://miacathletics.com/standings.aspx?path=msoc';
+  console.log('\n▶ Scraping MIAC standings...');
+  const html = await fetchHTML(url);
+  const $ = cheerio.load(html);
+  const rows = [];
+
+  $('table tr').each((i, tr) => {
+    const cells = $(tr).find('td');
+    if (cells.length < 6) return;
+    const teamName = $(cells[0]).text().trim().toLowerCase().replace(/\s+/g, ' ');
+    const abbr = MIAC_NAME_MAP[teamName];
+    if (!abbr) return;
+
+    // columns vary by site — look for W-L-T pattern in cells
+    const texts = cells.map((_, c) => $(c).text().trim()).get();
+    const wltRx = /^(\d+)-(\d+)-(\d+)$/;
+    const wltCols = texts.map((t, idx) => ({ idx, t, m: wltRx.exec(t) })).filter(x => x.m);
+
+    if (wltCols.length >= 2) {
+      const conf = wltCols[0].t.replace(/-/g, '–');
+      const overall = wltCols[1].t.replace(/-/g, '–');
+      rows.push({ abbr, conf_record: conf, overall_record: overall, rank: rows.length + 1 });
+    }
+  });
+
+  if (!rows.length) { console.log('  ✗ No standings parsed'); return; }
+
+  const { error } = await supabase.from('standings')
+    .upsert(rows.map(r => ({ ...r, updated_at: new Date().toISOString() })), { onConflict: 'abbr' });
+  if (error) console.log(`  ✗ Standings save failed: ${error.message}`);
+  else console.log(`  ✓ Saved standings for ${rows.length} teams → Supabase`);
+}
+
 // ── Main ──────────────────────────────────────────────────────────────────────
 async function main() {
   const targets = process.argv.slice(2).map(a => a.toUpperCase()).filter(Boolean);
   const schools = targets.length ? SCHOOLS.filter(s => targets.includes(s.abbr)) : SCHOOLS;
   if (!schools.length) { console.log('Unknown:', process.argv[2], '— valid:', SCHOOLS.map(s=>s.abbr).join(', ')); process.exit(1); }
+
+  // Scrape standings when running a full scrape (no specific school targeted)
+  if (!targets.length) await scrapeStandings().catch(e => console.log('  ✗ Standings:', e.message));
 
   for (const school of schools) {
     try {
