@@ -334,7 +334,7 @@ async function save(abbr, { roster, results, season }) {
   const model = ex?.model || { formation:'4-3-3', tactical:'', xi:[], lastStats:[] };
   model.roster = roster;
   model.results = results;
-  if (season) model.season = season;
+  model.season = season || new Date().getFullYear();
   const { error } = await supabase.from('team_overrides')
     .upsert({ abbr, model, updated_at: new Date().toISOString() }, { onConflict: 'abbr' });
   if (error) console.log(`  ✗ ${error.message}`);
@@ -440,4 +440,3 @@ async function main() {
 }
 
 main().catch(console.error);
-
