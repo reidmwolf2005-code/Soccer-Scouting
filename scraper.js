@@ -377,47 +377,153 @@ function normalizeYear(s) {
   return 'Fr.';
 }
 
-// ── Standings scraper ─────────────────────────────────────────────────────────
+// ── Standings + results scraper from MIAC calendar ───────────────────────────
 const MIAC_NAME_MAP = {
   'augsburg': 'AUG', 'bethel': 'BU', 'carleton': 'CAR', 'concordia': 'CON',
   'gustavus': 'GUS', 'gustavus adolphus': 'GUS', 'hamline': 'HAM',
   'macalester': 'MAC', "saint john's": 'SJU', "st. john's": 'SJU',
   "saint mary's": 'SMU', "st. mary's": 'SMU', 'st. olaf': 'OLE',
   'st. scholastica': 'CSS', 'college of st. scholastica': 'CSS',
+  // alternate spellings on calendar page
+  'gustavus adolphus college': 'GUS', 'gustavus': 'GUS',
+  'saint mary': 'SMU', "saint mary's university": 'SMU',
+  'college of st. scholastica': 'CSS', 'st. scholastica': 'CSS',
+  'saint john': 'SJU', "saint john's university": 'SJU',
 };
 
+function teamToAbbr(name) {
+  const n = (name || '').toLowerCase().trim()
+    .replace(/\s*\(away\)|\s*\(home\)/gi, '')
+    .replace(/\s+/g, ' ').trim();
+  if (MIAC_NAME_MAP[n]) return MIAC_NAME_MAP[n];
+  // partial match
+  for (const [key, abbr] of Object.entries(MIAC_NAME_MAP)) {
+    if (n.includes(key) || key.includes(n)) return abbr;
+  }
+  return null;
+}
+
 async function scrapeStandings() {
-  const url = 'https://miacathletics.com/standings.aspx?path=msoc';
-  console.log('\n▶ Scraping MIAC standings...');
+  const url = 'https://miacathletics.com/calendar.aspx?path=msoc';
+  console.log('\n▶ Scraping MIAC calendar for results...');
   const html = await fetchHTML(url);
   const $ = cheerio.load(html);
-  const rows = [];
 
-  $('table tr').each((i, tr) => {
-    const cells = $(tr).find('td');
-    if (cells.length < 6) return;
-    const teamName = $(cells[0]).text().trim().toLowerCase().replace(/\s+/g, ' ');
-    const abbr = MIAC_NAME_MAP[teamName];
-    if (!abbr) return;
+  // Records: { AUG: {w,l,t,ow,ol,ot}, ... }
+  const records = {};
+  // Results per team: { AUG: [{date, opp, abbr, home, gf, ga, conf}] }
+  const teamResults = {};
+  const MIAC_ABBRS = new Set(Object.values(MIAC_NAME_MAP));
 
-    // columns vary by site — look for W-L-T pattern in cells
-    const texts = cells.map((_, c) => $(c).text().trim()).get();
-    const wltRx = /^(\d+)-(\d+)-(\d+)$/;
-    const wltCols = texts.map((t, idx) => ({ idx, t, m: wltRx.exec(t) })).filter(x => x.m);
+  for (const abbr of MIAC_ABBRS) {
+    records[abbr] = { w:0, l:0, t:0, ow:0, ol:0, ot:0 };
+    teamResults[abbr] = [];
+  }
 
-    if (wltCols.length >= 2) {
-      const conf = wltCols[0].t.replace(/-/g, '–');
-      const overall = wltCols[1].t.replace(/-/g, '–');
-      rows.push({ abbr, conf_record: conf, overall_record: overall, rank: rows.length + 1 });
-    }
+  const today = new Date();
+
+  $('table').each((_, table) => {
+    // Each table is one day — get date from header row
+    const headerText = $(table).find('tr').first().text().trim();
+    const dateMatch = headerText.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+    if (!dateMatch) return;
+    const gameDate = new Date(+dateMatch[3], +dateMatch[1]-1, +dateMatch[2]);
+    if (gameDate > today) return; // skip future games
+
+    const dateLabel = `${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+dateMatch[1]-1]} ${+dateMatch[2]}`;
+
+    // Each subsequent row is a game: Away team | score | Home team | score | status
+    $(table).find('tr').each((i, row) => {
+      if (i === 0) return; // skip header
+      const cells = $(row).find('td').map((_, td) => $(td).text().trim()).get();
+      if (cells.length < 4) return;
+
+      // Format: [date?] [away team] [away score] [home team] [home score] [status] ...
+      // Find the row with a "Final" status
+      const rowText = cells.join(' ');
+      if (!rowText.includes('Final')) return;
+
+      // Try to find score pattern: two numbers separated by cells
+      // Cells typically: away_team, away_score, home_team, home_score, status, location
+      let awayTeam = '', awayScore = -1, homeTeam = '', homeScore = -1;
+
+      // Look for numeric score cells
+      const scoreCells = [];
+      cells.forEach((c, idx) => { if (/^\d+$/.test(c)) scoreCells.push({ idx, val: +c }); });
+      if (scoreCells.length < 2) return;
+
+      const firstScore = scoreCells[0];
+      const secondScore = scoreCells[1];
+      awayTeam = cells.slice(0, firstScore.idx).join(' ').replace(/\s+/g,' ').trim();
+      awayScore = firstScore.val;
+      homeTeam = cells.slice(firstScore.idx+1, secondScore.idx).join(' ').replace(/\s+/g,' ').trim();
+      homeScore = secondScore.val;
+
+      const awayAbbr = teamToAbbr(awayTeam);
+      const homeAbbr = teamToAbbr(homeTeam);
+      const isConf = awayAbbr && homeAbbr && MIAC_ABBRS.has(awayAbbr) && MIAC_ABBRS.has(homeAbbr);
+
+      // Update records and results for each MIAC team involved
+      const updateTeam = (abbr, gf, ga, opp, oppAbbr, home, conf) => {
+        if (!MIAC_ABBRS.has(abbr)) return;
+        if (conf) {
+          if (gf > ga) records[abbr].w++;
+          else if (ga > gf) records[abbr].l++;
+          else records[abbr].t++;
+        }
+        if (gf > ga) records[abbr].ow++;
+        else if (ga > gf) records[abbr].ol++;
+        else records[abbr].ot++;
+
+        teamResults[abbr].push({ date: dateLabel, opp, abbr: oppAbbr, home, gf, ga, conf });
+      };
+
+      if (awayAbbr) updateTeam(awayAbbr, awayScore, homeScore, homeTeam, homeAbbr, false, isConf);
+      if (homeAbbr) updateTeam(homeAbbr, homeScore, awayScore, awayTeam, awayAbbr, true, isConf);
+    });
   });
 
-  if (!rows.length) { console.log('  ✗ No standings parsed'); return; }
+  // Build standings sorted by conf points (W=3, T=1), then overall points
+  const pts = abbr => records[abbr].w * 3 + records[abbr].t;
+  const oPts = abbr => records[abbr].ow * 3 + records[abbr].ot;
+  const standingsRows = [...MIAC_ABBRS]
+    .filter(abbr => records[abbr].w + records[abbr].l + records[abbr].t > 0 || teamResults[abbr].length > 0)
+    .sort((a, b) => pts(b) - pts(a) || oPts(b) - oPts(a))
+    .map((abbr, i) => {
+      const r = records[abbr];
+      return {
+        abbr,
+        conf_record: `${r.w}–${r.l}–${r.t}`,
+        overall_record: `${r.ow}–${r.ol}–${r.ot}`,
+        rank: i + 1,
+        updated_at: new Date().toISOString(),
+      };
+    });
 
-  const { error } = await supabase.from('standings')
-    .upsert(rows.map(r => ({ ...r, updated_at: new Date().toISOString() })), { onConflict: 'abbr' });
-  if (error) console.log(`  ✗ Standings save failed: ${error.message}`);
-  else console.log(`  ✓ Saved standings for ${rows.length} teams → Supabase`);
+  console.log(`  Parsed ${standingsRows.length} teams with games played`);
+  standingsRows.forEach(r => console.log(`  ${r.rank}. ${r.abbr} ${r.conf_record} (overall ${r.overall_record})`));
+
+  if (!standingsRows.length) { console.log('  ✗ No results found yet'); return; }
+
+  // Save standings
+  const { error: sErr } = await supabase.from('standings')
+    .upsert(standingsRows, { onConflict: 'abbr' });
+  if (sErr) console.log(`  ✗ Standings save failed: ${sErr.message}`);
+  else console.log(`  ✓ Saved standings for ${standingsRows.length} teams`);
+
+  // Save each team's results into team_overrides.model.results
+  for (const abbr of MIAC_ABBRS) {
+    const results = teamResults[abbr];
+    if (!results.length) continue;
+    const { data: ex } = await supabase.from('team_overrides').select('model').eq('abbr', abbr).maybeSingle();
+    if (!ex) continue; // only update teams already in DB
+    const model = ex.model || {};
+    model.results = results;
+    const { error } = await supabase.from('team_overrides')
+      .update({ model, updated_at: new Date().toISOString() }).eq('abbr', abbr);
+    if (error) console.log(`  ✗ Results save failed for ${abbr}: ${error.message}`);
+    else console.log(`  ✓ Saved ${results.length} results for ${abbr}`);
+  }
 }
 
 // ── Main ──────────────────────────────────────────────────────────────────────
