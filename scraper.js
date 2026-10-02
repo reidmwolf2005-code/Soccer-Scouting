@@ -404,6 +404,48 @@ function teamToAbbr(name) {
 }
 
 async function scrapeStandings() {
+  // MIAC calendar page loads dynamically — calculate standings from each team's own results in Supabase
+  console.log('\n▶ Calculating MIAC standings from scraped results...');
+  const MIAC_ABBRS = new Set(['GUS','SJU','CON','CSS','AUG','BU','CAR','HAM','MAC','SMU','OLE']);
+  const records = {};
+  for (const abbr of MIAC_ABBRS) records[abbr] = { w:0, l:0, t:0, ow:0, ol:0, ot:0 };
+
+  // Load all MIAC teams' results from Supabase
+  const { data: teams, error } = await supabase.from('team_overrides').select('abbr,model').in('abbr', [...MIAC_ABBRS]);
+  if (error) { console.log('  ✗ Could not load team data:', error.message); return; }
+
+  for (const team of (teams || [])) {
+    const abbr = team.abbr;
+    const results = team.model?.results || [];
+    for (const r of results) {
+      if (r.conf) {
+        if (r.gf > r.ga) records[abbr].w++;
+        else if (r.ga > r.gf) records[abbr].l++;
+        else records[abbr].t++;
+      }
+      if (r.gf > r.ga) records[abbr].ow++;
+      else if (r.ga > r.gf) records[abbr].ol++;
+      else records[abbr].ot++;
+    }
+  }
+
+  const pts = abbr => records[abbr].w * 3 + records[abbr].t;
+  const oPts = abbr => records[abbr].ow * 3 + records[abbr].ot;
+  const standingsRows = [...MIAC_ABBRS]
+    .sort((a, b) => pts(b) - pts(a) || oPts(b) - oPts(a))
+    .map((abbr, i) => {
+      const r = records[abbr];
+      return { abbr, conf_record: `${r.w}–${r.l}–${r.t}`, overall_record: `${r.ow}–${r.ol}–${r.ot}`, rank: i + 1, updated_at: new Date().toISOString() };
+    });
+
+  standingsRows.forEach(r => console.log(`  ${r.rank}. ${r.abbr} ${r.conf_record} (overall ${r.overall_record})`));
+
+  const { error: sErr } = await supabase.from('standings').upsert(standingsRows, { onConflict: 'abbr' });
+  if (sErr) console.log(`  ✗ Standings save failed: ${sErr.message}`);
+  else console.log(`  ✓ Saved standings for ${standingsRows.length} teams`);
+}
+
+async function _unused_scrapeStandings_calendar() {
   const url = 'https://miacathletics.com/calendar.aspx?path=msoc';
   console.log('\n▶ Scraping MIAC calendar for results...');
   const html = await fetchHTML(url);
@@ -532,9 +574,6 @@ async function main() {
   const schools = targets.length ? SCHOOLS.filter(s => targets.includes(s.abbr)) : SCHOOLS;
   if (!schools.length) { console.log('Unknown:', process.argv[2], '— valid:', SCHOOLS.map(s=>s.abbr).join(', ')); process.exit(1); }
 
-  // Scrape standings when running a full scrape (no specific school targeted)
-  if (!targets.length) await scrapeStandings().catch(e => console.log('  ✗ Standings:', e.message));
-
   for (const school of schools) {
     try {
       const data = await scrapeSchool(school);
@@ -542,6 +581,9 @@ async function main() {
     } catch (e) { console.log(`  ✗ ${e.message}`); }
     if (schools.indexOf(school) < schools.length - 1) await new Promise(r => setTimeout(r, 2000));
   }
+  // Calculate standings after all teams scraped (full run only)
+  if (!targets.length) await scrapeStandings().catch(e => console.log('  ✗ Standings:', e.message));
+
   console.log('\n✓ Done');
 }
 
