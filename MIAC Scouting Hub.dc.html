@@ -87,7 +87,7 @@
 
   <div class="hub-content" style="width:100%;max-width:1320px;padding:30px 40px 64px;display:flex;flex-direction:column">
 
-    <!-- ===== NEXT MATCH HERO (Option A style) ===== -->
+    <!-- ===== NEXT MATCH HERO ===== -->
     <div style="position:relative;border-radius:18px;overflow:hidden;background:linear-gradient(110deg,#101010 0%,#181410 55%,#241c0c 100%);border:1px solid rgba(198,160,74,.32)">
       <div style="position:absolute;inset:0;background:radial-gradient(120% 140% at 100% 0%,rgba(198,160,74,.16),transparent 55%)"></div>
       <div style="position:relative;display:grid;grid-template-columns:1.1fr .9fr;gap:0;min-height:300px">
@@ -176,7 +176,7 @@
       </div>
     </div>
 
-    <!-- ===== MIAC PROGRAMS (Option B cards) ===== -->
+    <!-- ===== MIAC PROGRAMS ===== -->
     <div class="hub-section-header" style="display:flex;align-items:center;justify-content:space-between;margin:38px 0 20px">
       <div style="display:flex;align-items:center;gap:12px">
         <span style="font-family:'Archivo',sans-serif;font-weight:900;font-size:21px;color:#fff;letter-spacing:-.01em">MIAC Programs</span>
@@ -289,16 +289,15 @@
 </x-dc>
 <script type="text/x-dc" data-dc-script>
 class Component extends DCLogic {
-  state = { me: null, users: [], meId: null, userMenuOpen: false, schedule: [], schedOpen: false, schedText: '', schedFlash: '', schedDraft: [], nextMatch: null, nonConf: [] };
+  state = { me: null, users: [], meId: null, userMenuOpen: false, schedule: [], schedOpen: false, schedText: '', schedFlash: '', schedDraft: [], nextMatch: null, nonConf: [], standings: [] };
 
   async componentDidMount() {
     try { this.auth = await import('./auth.js?v=2'); } catch (e) { console.error('auth load failed', e); }
-    try { this.mod = await import('./data.js?v=11'); } catch (e) { console.error('data load failed', e); }
+    try { this.mod = await import('./data.js?v=13'); } catch (e) { console.error('data load failed', e); }
     const a = this.auth, m = this.mod;
-    // Redirect to login if not signed in
     const session = await a.getSession();
     if (!session) { location.href = 'Login.dc.html'; return; }
-    const [users, meId, me, schedule, nextMatch, nonConf, gusTeam] = await Promise.all([
+    const [users, meId, me, schedule, nextMatch, nonConf, gusTeam, standings] = await Promise.all([
       a ? a.getUsers() : Promise.resolve([]),
       a ? a.getCurrentUserId() : Promise.resolve(null),
       a ? a.getCurrentUser() : Promise.resolve({ name: 'Guest', role: 'player', email: '' }),
@@ -306,8 +305,9 @@ class Component extends DCLogic {
       m ? m.getNextMatch() : Promise.resolve(null),
       m ? m.getNonConfOpponents() : Promise.resolve([]),
       m ? m.getTeam('GUS') : Promise.resolve(null),
+      m ? m.getStandings() : Promise.resolve([]),
     ]);
-    this.setState({ users, meId, me, schedule, nextMatch, nonConf, gusTeam });
+    this.setState({ users, meId, me, schedule, nextMatch, nonConf, gusTeam, standings });
   }
 
   toggleUserMenu = () => this.setState(s => ({ userMenuOpen: !s.userMenuOpen }));
@@ -388,16 +388,7 @@ class Component extends DCLogic {
       me: { initials: A.initials(me.name), name: me.name, roleLabel: A.ROLE_LABEL[me.role], roleFg: mc.fg, avatarStyle: avatar(me.role, 38) },
       userMenuOpen: this.state.userMenuOpen,
       toggleUserMenu: this.toggleUserMenu, closeUserMenu: this.closeUserMenu,
-      switcher: this.state.users.map(u => {
-        const c = A.roleColor(u.role); const cur = u.id === this.state.meId;
-        return {
-          initials: A.initials(u.name), name: u.name, roleLabel: A.ROLE_LABEL[u.role], roleFg: c.fg,
-          avatarStyle: avatar(u.role, 32),
-          rowStyle: `display:flex;align-items:center;gap:11px;width:100%;text-align:left;cursor:pointer;border:none;border-radius:9px;padding:9px 10px;background:${cur ? 'rgba(198,160,74,.12)' : 'transparent'}`,
-          checkStyle: cur ? 'color:#e4c977;font-size:13px;font-weight:800' : 'color:transparent;font-size:13px',
-          onSwitch: () => this.switchUser(u.id),
-        };
-      }),
+      switcher: [],
       adminLinkStyle: (me.role === 'admin')
         ? 'display:flex;align-items:center;gap:8px;padding:6px 10px;color:#e4c977;font-size:13px;font-weight:700;text-decoration:none;cursor:pointer'
         : 'display:none',
@@ -406,18 +397,33 @@ class Component extends DCLogic {
   }
 
   renderVals() {
-    const teams = [
-      { name: 'Augsburg',     short: 'Augsburg',  mascot: 'Auggies',  abbr: 'AUG', crest: 'linear-gradient(135deg,#7a2230,#52121c)', record: '6–3–1', rank: '#5' },
-      { name: 'Bethel',       short: 'Bethel',    mascot: 'Royals',   abbr: 'BU',  crest: 'linear-gradient(135deg,#0a4b9c,#012f66)', record: '8–1–1', rank: '#2' },
-      { name: 'Carleton',     short: 'Carleton',  mascot: 'Knights',  abbr: 'CAR', crest: 'linear-gradient(135deg,#0e3a6e,#04203f)', record: '5–4–1', rank: '#6' },
-      { name: 'Concordia',    short: 'Concordia', mascot: 'Cobbers',  abbr: 'CON', crest: 'linear-gradient(135deg,#5b0e2d,#370819)', record: '4–5–1', rank: '#7' },
-      { name: 'Hamline',      short: 'Hamline',   mascot: 'Pipers',   abbr: 'HAM', crest: 'linear-gradient(135deg,#c8102e,#88081f)', record: '3–6–1', rank: '#8' },
-      { name: 'Macalester',   short: 'Macalester',mascot: 'Scots',    abbr: 'MAC', crest: 'linear-gradient(135deg,#f47920,#c1560f)', record: '7–2–1', rank: '#3' },
-      { name: "Saint John's", short: "St. John's",mascot: 'Johnnies', abbr: 'SJU', crest: 'linear-gradient(135deg,#b1232e,#7a0f18)', record: '9–0–1', rank: '#1' },
-      { name: "Saint Mary's", short: "St. Mary's",mascot: 'Cardinals',abbr: 'SMU', crest: 'linear-gradient(135deg,#9d2235,#6a0f1f)', record: '2–7–1', rank: '#9' },
-      { name: 'St. Olaf',     short: 'St. Olaf',  mascot: 'Oles',     abbr: 'OLE', crest: 'linear-gradient(135deg,#1a1a1a,#000000)', record: '6–3–1', rank: '#4' },
-      { name: 'St. Scholastica', short: 'Scholastica', mascot: 'Saints', abbr: 'CSS', crest: 'linear-gradient(135deg,#0e6ba8,#063a5c)', record: '4–5–1', rank: '#10' },
+    const TEAM_META = {
+      OLE: { name: 'St. Olaf',        short: 'St. Olaf',    mascot: 'Oles',      crest: 'linear-gradient(135deg,#1a1a1a,#000000)' },
+      SJU: { name: "Saint John's",    short: "St. John's",  mascot: 'Johnnies',  crest: 'linear-gradient(135deg,#b1232e,#7a0f18)' },
+      AUG: { name: 'Augsburg',        short: 'Augsburg',    mascot: 'Auggies',   crest: 'linear-gradient(135deg,#7a2230,#52121c)' },
+      MAC: { name: 'Macalester',      short: 'Macalester',  mascot: 'Scots',     crest: 'linear-gradient(135deg,#f47920,#c1560f)' },
+      GUS: { name: 'Gustavus',        short: 'Gustavus',    mascot: 'Gusties',   crest: 'linear-gradient(135deg,#c6a04a,#8a6e2f)' },
+      CAR: { name: 'Carleton',        short: 'Carleton',    mascot: 'Knights',   crest: 'linear-gradient(135deg,#0e3a6e,#04203f)' },
+      BU:  { name: 'Bethel',          short: 'Bethel',      mascot: 'Royals',    crest: 'linear-gradient(135deg,#0a4b9c,#012f66)' },
+      HAM: { name: 'Hamline',         short: 'Hamline',     mascot: 'Pipers',    crest: 'linear-gradient(135deg,#c8102e,#88081f)' },
+      SMU: { name: "Saint Mary's",    short: "St. Mary's",  mascot: 'Cardinals', crest: 'linear-gradient(135deg,#9d2235,#6a0f1f)' },
+      CSS: { name: 'St. Scholastica', short: 'Scholastica', mascot: 'Saints',    crest: 'linear-gradient(135deg,#0e6ba8,#063a5c)' },
+      CON: { name: 'Concordia',       short: 'Concordia',   mascot: 'Cobbers',   crest: 'linear-gradient(135deg,#5b0e2d,#370819)' },
+    };
+
+    // Use live standings from Supabase if available, otherwise fall back to hardcoded
+    const FALLBACK = [
+      { abbr: 'OLE', conf_record: '7–1–2', rank: 1 }, { abbr: 'SJU', conf_record: '6–2–2', rank: 2 },
+      { abbr: 'AUG', conf_record: '7–1–2', rank: 3 }, { abbr: 'MAC', conf_record: '6–2–2', rank: 4 },
+      { abbr: 'GUS', conf_record: '6–3–1', rank: 5 }, { abbr: 'CAR', conf_record: '3–4–3', rank: 6 },
+      { abbr: 'BU',  conf_record: '5–4–1', rank: 7 }, { abbr: 'HAM', conf_record: '1–7–2', rank: 8 },
+      { abbr: 'SMU', conf_record: '2–7–1', rank: 9 }, { abbr: 'CSS', conf_record: '0–9–1', rank: 10 },
+      { abbr: 'CON', conf_record: '0–9–1', rank: 11 },
     ];
+    const standingsData = (this.state.standings && this.state.standings.length) ? this.state.standings : FALLBACK;
+    const teams = standingsData
+      .filter(s => TEAM_META[s.abbr])
+      .map(s => ({ ...TEAM_META[s.abbr], abbr: s.abbr, record: s.conf_record, rank: '#' + s.rank }));
 
     const nm = this.state.nextMatch;
     const fmtDate = (iso) => { if (!iso) return 'TBD'; const d = new Date(iso + 'T12:00:00'); if (isNaN(d)) return 'TBD'; const wd = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'], mo = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']; return `${wd[d.getDay()]} · ${mo[d.getMonth()]} ${d.getDate()}`; };
@@ -450,8 +456,8 @@ class Component extends DCLogic {
       openNext: () => { if (hasReport) location.href = `Team.dc.html?team=${nm.team.abbr}`; },
       schedOpen: this.state.schedOpen, schedText: this.state.schedText, schedFlash: this.state.schedFlash,
       openSched: this.openSched, closeSched: this.closeSched, onSchedText: this.onSchedText, parseSched: this.parseSched, saveSched: this.saveSched, resetSched: this.resetSched, onSchedFile: this.onSchedFile,
-      schedCount: draft.length,
-      fixtures: draft.map((f, i) => ({
+      schedCount: draft.filter(f => f.conf).length,
+      fixtures: draft.filter(f => f.conf).map((f, i) => ({
         dateLabel: fmtDate(f.date), time: f.time || 'TBD', name: f.name || 'Opponent',
         haLabel: f.home ? 'H' : 'A',
         haStyle: `display:flex;align-items:center;justify-content:center;width:34px;height:26px;border-radius:6px;font-family:Archivo,sans-serif;font-weight:800;font-size:11px;flex-shrink:0;background:${f.home ? 'rgba(95,191,122,.18)' : 'rgba(198,160,74,.16)'};color:${f.home ? '#5fbf7a' : '#e4c977'}`,
